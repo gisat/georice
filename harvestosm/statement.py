@@ -1,5 +1,7 @@
 import collections
 import utils
+import itertools
+from area import Area
 
 class Statement:
     """
@@ -38,42 +40,41 @@ class Statement:
     """
     _operation = collections.OrderedDict()
     _named_areas = dict()
+    _containers = ['_named_areas','_statement','_operation']
+    _count = 0
 
     def __init__(self, name, statement, operation=_operation, named_area=_named_areas):
         self._name = name
         self._statement = statement
         self._operation = operation
         self._named_areas = named_area
+        self._length = sum([self.__getattribute__(x).__len__() for x in Statement._containers])
+        self._chain = (y for x in self._containers for y in self.__getattribute__(x).items())
 
     @classmethod
     def Node(cls, area, tags=None, name=None):
-        if name is None: name = utils.random_name()
-        if isinstance(area, Statement):
-            return cls(name, {name: ['node', area._name, tags]}, named_area=area._statement)
-        else:
-            statement = {name: ['node', area, tags]}
-            return cls(name, statement)
+       return Statement._constructor('node', area, tags, name)
 
     @classmethod
     def Way(cls, area, tags=None, name=None):
-        if name is None: name = utils.random_name()
-        if isinstance(area, Statement):
-            return cls(name, {name: ['way', area._name, tags]}, named_area=area._statement)
-        else:
-            statement = {name: ['way', area, tags]}
-            return cls(name, statement)
+        return Statement._constructor('way', area, tags, name)
 
     @classmethod
     def NWR(cls, area, tags=None, name=None):
-        if name is None: name = utils.random_name()
-        statement = {name: ['nwr', area, tags]}
-        return cls(name, statement)
+        return Statement._constructor('nwr', area, tags, name)
 
     @classmethod
     def Rel(cls, area, tags=None, name=None):
+        return Statement._constructor('rel', area, tags, name)
+
+    @classmethod
+    def _constructor(cls, type, area, tags=None, name=None):
         if name is None: name = utils.random_name()
-        statement = {name: ['rel', area, tags]}
-        return cls(name, statement)
+        if isinstance(area, Statement):
+            return cls(name, {name: [type , area._name, tags]}, named_area=area._statement)
+        else:
+            statement = {name: [type, area, tags]}
+            return cls(name, statement)
 
     #  definitions of operations over the Statement object
     def __add__(self, other):
@@ -111,12 +112,25 @@ class Statement:
         quit()
 
     def __eq__(self, other):
-        attr = ['_name', '_statement', '_operation', '_named_areas']
-        if all([self.__getattribute__(a) == other.__getattribute__(a) for a in attr]):
+        if all([self.__getattribute__(a) == other.__getattribute__(a) for a in self._containers]):
             return True
         else:
             return False
 
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if Statement._count >= self._length:
+            Statement._count = 0
+            self._chain = (y for x in self._containers for y in self.__getattribute__(x).items())
+            raise StopIteration
+        Statement._count += 1
+        return next(self._chain)
+
+    @property
+    def statement(self):
+        return '\n'.join(self._get_statements(name,statement) for name, statement in iter(self))
 
     # methods
     def recurse(self, sign):
@@ -132,4 +146,47 @@ class Statement:
         operation.update(other._operation)
         operation.update({name:[self._name, sign,other._name]})
         return operation
+
+    @staticmethod
+    def _get_statements(name,statement):
+        area = Statement._get_area(statement[1])
+        tags = ''.join(Statement._print_tag(statement[2]))
+
+        return f'{statement[0]}{area}{tags}->.{name};'
+
+    @staticmethod
+    def _get_area(area):
+        if isinstance(area, Area):
+            return f'{area.__getattribute__(area.out)}'
+        elif isinstance(area, str):
+            return f'.{area}'
+
+    @staticmethod
+    def _print_operation(name,oper):
+        if oper[1] == '+':
+            return f'(.{oper[0]};.{oper[2]};)->.{name};'
+        elif oper[1] == '-':
+            return f'(.{oper[0]}; - .{oper[2]};)->.{name};'
+        elif oper[1] in ['>', '>>', '<', '<<']:
+            return f'(.{oper[0]}; {oper[1]};)->.{name};'
+        elif oper[1] == '.':
+            print('intersection is not supported in this version')
+            quit()
+
+    @staticmethod
+    def _print_tag(tags):
+        s = ''
+        if isinstance(tags, dict):
+            for key, value in tags.items():
+                if value is None:
+                    s += f'["{key}"]'
+                else:
+                    s += f'["{key}"="{value}"]'
+        elif isinstance(tags, str):
+            for tag in tags.split(','):
+                s += f'[{tag}]'
+        elif isinstance(tags, list):
+            for tag in tags:
+                s += f'[{tag}]'
+        return s
 

@@ -33,19 +33,18 @@ shape = geo.loc[0].geometry
 
 #  interakce s HarvestOSM lib
 area = Area.from_shape(shape)
-st0 = Statement.Way(area, name='AREA')
-st1 = Statement.Way(st0, tags=['highway'], name='st1')
+st0 = Statement.Node(area, name='AREA')
+st1 = Statement.Node(st0, tags=['highway'], name='st1')
 st2 = Statement.Way(st0, tags=['highway=footway'], name='st2')
 area2 = Area.from_bbox([0,0,1,1])
 st3 = Statement.Way(area2, name='AREA2')
 st4 = Statement.Way(st3, tags=['buildings'])
 st5 = Statement.Way(st3, tags=['buildings=hospital'])
 
-
-q = Query((st1-st2)+(st4-st5))
-
-
+s=(st1-st2)+(st4-st5)
+q=Query(s)
 print(q.query)
+
 # s=Server(q.query)
 # r=s.get_from_overpass
 # p=Parse(r.json())
