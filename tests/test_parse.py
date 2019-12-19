@@ -22,6 +22,7 @@ class TestParse(unittest.TestCase):
         for e in ['node', 'line', 'linering', 'polygon']:
             p = ParseOSM._get_collection([self._test_elements[e]])
             self.assertEqual(p.__geo_interface__, self._test_elements[e + '_parsed'])
+            self.assertEqual(p.is_valid, True)
 
     def test__area_check(self):
         self.assertEqual(ParseOSM._area_check('building', 'yes'), True)  # Polygon Tag with all accepted values

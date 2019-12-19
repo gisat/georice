@@ -24,30 +24,33 @@ class ParseOSM:
         for element in elements:
             if element.get('tags') is not None:
                 if element.get('type') == 'node':
-
                     geom = geojson.Point(coordinates=[element['lon'], element['lat']])
                     features.append(geojson.Feature(element['id'], geom, element['tags']))
-
                 elif element.get('type') == 'way' and (element.get("nodes")[0] == element.get("nodes")[-1]) is False:
-
-                    coords = [(e.get('lon'), e.get('lat')) for e in element['geometry']]
-                    geom = geojson.LineString(coordinates=coords)
-                    features.append(geojson.Feature(element['id'], geom, element['tags']))
-
+                    features.append(ParseOSM._geojson_feature(element, 'LineString'))
                 elif element.get('type') == 'way' and (element.get("nodes")[0] == element.get("nodes")[-1]) is True:
                     if any(ParseOSM._area_check(key, value) for key, value in element.get('tags').items()) is True:
-                        coords = [(e.get('lon'), e.get('lat')) for e in element['geometry']]
-                        geom = geojson.Polygon(coordinates=[coords])
-                        features.append(geojson.Feature(element['id'], geom, element['tags']))
+                        # create polygon feature from closed way after passing the test on polygon tags
+                        features.append(ParseOSM._geojson_feature(element, 'Polygon'))
                     else:
-                        coords = [(e.get('lon'), e.get('lat')) for e in element['geometry']]
-                        geom = geojson.LineString(coordinates=coords)
-                        features.append(geojson.Feature(element['id'], geom, element['tags']))
-
+                        features.append(ParseOSM._geojson_feature(element, 'LineString'))
                 else:
-                    # for test
                     print(f'problem with {element.get("type")} and id no {element["id"]}')
         return geojson.FeatureCollection(features)
+
+    @staticmethod
+    def _get_element_coords(element):
+        # extract coords from osm json output
+        return [(e.get('lon'), e.get('lat')) for e in element['geometry']]
+
+    @staticmethod
+    def _geojson_feature(element, type):
+        # create geojson feature based on type
+        if type != 'Polygon':
+            geom = getattr(geojson, type)(ParseOSM._get_element_coords(element))
+        else:
+            geom = getattr(geojson, type)([ParseOSM._get_element_coords(element)])
+        return geojson.Feature(element['id'], geom, element['tags'])
 
     @staticmethod
     def _area_check(key, value):
