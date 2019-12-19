@@ -1,7 +1,7 @@
 import collections
 import utils
-import itertools
 from area import Area
+
 
 class Statement:
     """
@@ -48,8 +48,6 @@ class Statement:
         self._statement = statement
         self._operation = operation
         self._named_areas = named_area
-        self._length = sum([self.__getattribute__(x).__len__() for x in Statement._containers])
-        self._chain = (y for x in self._containers for y in self.__getattribute__(x).items())
 
     @classmethod
     def Node(cls, area, tags=None, name=None):
@@ -68,44 +66,43 @@ class Statement:
         return Statement._constructor('rel', area, tags, name)
 
     @classmethod
-    def _constructor(cls, type, area, tags=None, name=None):
+    def _constructor(cls, typ, area, tags=None, name=None):
         if name is None: name = utils.random_name()
         if isinstance(area, Statement):
-            return cls(name, {name: [type , area._name, tags]}, named_area=area._statement)
+            return cls(name, {name: [typ, area._name, tags]}, named_area=area._statement)
         else:
-            statement = {name: [type, area, tags]}
+            statement = {name: [typ, area, tags]}
             return cls(name, statement)
 
     #  definitions of operations over the Statement object
-    def __add__(self, other):
+    def _operation(self, other, sign):
         name = utils.random_name()
         named_area = {**self._named_areas, **other._named_areas}
         statement = {**self._statement, **other._statement}
-        operation = Statement._make_opperation(self, other, name, '+')
+        operation = Statement._make_opperation(self, other, name, sign)
+        return name, named_area, statement, operation
+
+    def __add__(self, other):
+        name, named_area, statement, operation = Statement._operation(self, other, '+')
         return Statement(name, statement, operation, named_area)
 
     def __or__(self, other):
-        return Statement.__add__(self,other)
+        return Statement.__add__(self, other)
 
     def __sub__(self, other):
-        name = utils.random_name()
-        named_area = {**self._named_areas, **other._named_areas}
-        statement = {**self._statement, **other._statement}
-        operation = Statement._make_opperation(self, other, name, '-')
+        name, named_area, statement, operation = Statement._operation(self, other, '-')
         return Statement(name, statement, operation, named_area)
 
     def __mul__(self, other):
-        name = utils.random_name()
-        named_area = {**self._named_areas, **other._named_areas}
-        statement = {**self._statement, **other._statement}
-        operation = Statement._make_opperation(self, other, name, '.')
+        name, named_area, statement, operation = Statement._operation(self, other, '.')
         return Statement(name, statement, operation, named_area)
 
     def __and__(self, other):
         return Statement.__mul__(self, other)
 
     def __neg__(self):
-        print('Standalone negative Statement "(-st)".\n Statemens can by substract only from other statement. Example:\n'
+        print('Standalone negative Statement "(-st)".\n'
+              ' Statemens can by substract only from other statement. Example:\n'
               'st1 = Statement.Way(area, "highway") => Overpass: node.area["highway"]->.st1\n'
               'st2 = Statement.Way(area,"highway=path") => Overpass: node.area["highway"="path"]->.st2 '
               's=st1-st2 => Overpass: (st1;- st2;);')
@@ -118,37 +115,34 @@ class Statement:
             return False
 
     def __iter__(self):
-        return self
+        return ((name, statement, c) for c in self._containers for name, statement in self.__getattribute__(c).items())
 
     def __next__(self):
-        if Statement._count >= self._length:
-            Statement._count = 0
-            self._chain = (y for x in self._containers for y in self.__getattribute__(x).items())
-            raise StopIteration
-        Statement._count += 1
-        return next(self._chain)
+        return self
 
     @property
     def statement(self):
-        return '\n'.join(self._get_statements(name,statement) for name, statement in iter(self))
+        return'\n'.join(self._get_operation(n, s) if c =='_operation' else self._get_statements(n, s) for n, s, c in iter(self))
 
     # methods
     def recurse(self, sign):
         name = utils.random_name()
         statement = self._statement
+        named_area = self._named_areas
         operation = self._operation.copy()
         operation.update({name: [self._name, sign, None]})
-        return Statement(name, statement, operation)
+        return Statement(name, statement, operation, named_area)
 
     # static function
     def _make_opperation(self, other, name, sign):
         operation = self._operation.copy()
         operation.update(other._operation)
-        operation.update({name:[self._name, sign,other._name]})
+        operation.update({name: [self._name, sign, other._name]})
         return operation
 
     @staticmethod
-    def _get_statements(name,statement):
+    def _get_statements(name, statement):
+        """print statements"""
         area = Statement._get_area(statement[1])
         tags = ''.join(Statement._print_tag(statement[2]))
 
@@ -156,20 +150,22 @@ class Statement:
 
     @staticmethod
     def _get_area(area):
+        """print area from Area class according attribute out"""
         if isinstance(area, Area):
             return f'{area.__getattribute__(area.out)}'
         elif isinstance(area, str):
             return f'.{area}'
 
     @staticmethod
-    def _print_operation(name,oper):
-        if oper[1] == '+':
-            return f'(.{oper[0]};.{oper[2]};)->.{name};'
-        elif oper[1] == '-':
-            return f'(.{oper[0]}; - .{oper[2]};)->.{name};'
-        elif oper[1] in ['>', '>>', '<', '<<']:
-            return f'(.{oper[0]}; {oper[1]};)->.{name};'
-        elif oper[1] == '.':
+    def _get_operation(name, op):
+        """ print overpass operations"""
+        if op[1] == '+':
+            return f'(.{op[0]};.{op[2]};)->.{name};'
+        elif op[1] == '-':
+            return f'(.{op[0]}; - .{op[2]};)->.{name};'
+        elif op[1] in ['>', '>>', '<', '<<']:
+            return f'(.{op[0]}; {op[1]};)->.{name};'
+        elif op[1] == '.':
             print('intersection is not supported in this version')
             quit()
 
@@ -189,4 +185,3 @@ class Statement:
             for tag in tags:
                 s += f'[{tag}]'
         return s
-
