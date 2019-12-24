@@ -1,5 +1,3 @@
-from area import Area
-from statement import Statement
 
 
 class Query:

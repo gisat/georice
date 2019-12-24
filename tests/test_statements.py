@@ -1,6 +1,6 @@
 import unittest
-from unittest.mock import Mock
-from statement import Statement
+from harvestosm.statement import Statement
+
 
 class TestStatement(unittest.TestCase):
 
@@ -18,7 +18,7 @@ class TestStatement(unittest.TestCase):
 
     def test_operations(self):
         # test of arithmetic operations
-        for o, s in zip(self.op,self.sign):
+        for o, s in zip(self.op, self.sign):
             res = getattr(Statement, o).__call__(self.st1, self.st2)
             self.assertEqual(res._operation[res._name], ['1', s, '2'])
 

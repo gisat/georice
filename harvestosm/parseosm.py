@@ -1,6 +1,7 @@
 import geopandas
 import geojson
-import utils
+from utils import utils
+
 
 class ParseOSM:
     # used for parsing overpass response int geojson format. Parser includes simple check if closed way is linear ring

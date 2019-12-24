@@ -1,6 +1,6 @@
 import collections
-import utils
-from area import Area
+from utils import utils
+from harvestosm.area import Area
 
 
 class Statement:

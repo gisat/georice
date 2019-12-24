@@ -1,6 +1,7 @@
 import unittest
-from area import Area
+from harvestosm.area import Area
 from shapely import geometry
+
 
 class TestStatement(unittest.TestCase):
 

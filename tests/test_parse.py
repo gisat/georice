@@ -1,6 +1,5 @@
 import unittest
-from unittest.mock import Mock
-from parseosm import ParseOSM
+from harvestosm.parseosm import ParseOSM
 import json
 
 
@@ -14,9 +13,6 @@ class TestParse(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._test_elements = get_test_elements()
-
-    def test_gpd(self):
-        self.fail()
 
     def test__get_collection(self):
         for e in ['node', 'line', 'linering', 'polygon']:

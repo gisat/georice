@@ -1,4 +1,5 @@
-import utils
+from utils import utils
+
 
 class Area:
 
