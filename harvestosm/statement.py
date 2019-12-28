@@ -70,6 +70,8 @@ class Statement:
         if name is None: name = utils.random_name()
         if isinstance(area, Statement):
             return cls(name, {name: [typ, area._name, tags]}, named_area=area._statement)
+        elif isinstance(area, Area):
+            return cls(name, {name: [typ, area._name, tags]}, named_area={area._name: [typ, area, None]})
         else:
             statement = {name: [typ, area, tags]}
             return cls(name, statement)
