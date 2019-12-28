@@ -74,14 +74,28 @@ class Statement:
             statement = {name: [typ, area, tags]}
             return cls(name, statement)
 
-    #  definitions of operations over the Statement object
-    def _operation(self, other, sign):
-        name = utils.random_name()
-        named_area = {**self._named_areas, **other._named_areas}
-        statement = {**self._statement, **other._statement}
-        operation = Statement._make_opperation(self, other, name, sign)
-        return name, named_area, statement, operation
+    def Union(self, *args, **kwargs):
+        '''Return union of statement objects'''
+        s = self
+        for arg in args:
+            if isinstance(arg, Statement):
+                s += arg
+        return s
 
+    def Difference(self, *args, **kwargs):
+        '''Return difference of statement objects'''
+        s = self
+        for arg in args:
+            if isinstance(arg, Statement):
+                s -= arg
+        return s
+
+    def Intersecton(self, other, type):
+        '''Return union of statement objects'''
+        name, named_area, statement, operation = Statement._operation(self, other, type)
+        return Statement(name, statement, operation, named_area)
+
+    #  definitions of operations over the Statement object
     def __add__(self, other):
         name, named_area, statement, operation = Statement._operation(self, other, '+')
         return Statement(name, statement, operation, named_area)
@@ -92,13 +106,6 @@ class Statement:
     def __sub__(self, other):
         name, named_area, statement, operation = Statement._operation(self, other, '-')
         return Statement(name, statement, operation, named_area)
-
-    def __mul__(self, other):
-        name, named_area, statement, operation = Statement._operation(self, other, '.')
-        return Statement(name, statement, operation, named_area)
-
-    def __and__(self, other):
-        return Statement.__mul__(self, other)
 
     def __neg__(self):
         print('Standalone negative Statement "(-st)".\n'
@@ -114,6 +121,9 @@ class Statement:
         else:
             return False
 
+    def __str__(self):
+        return'\n'.join(self._get_operation(n, s) if c =='_operation' else self._get_statements(n, s) for n, s, c in iter(self))
+
     def __iter__(self):
         return ((name, statement, c) for c in self._containers for name, statement in self.__getattribute__(c).items())
 
@@ -122,7 +132,7 @@ class Statement:
 
     @property
     def statement(self):
-        return'\n'.join(self._get_operation(n, s) if c =='_operation' else self._get_statements(n, s) for n, s, c in iter(self))
+        return''.join(self._get_operation(n, s) if c =='_operation' else self._get_statements(n, s) for n, s, c in iter(self))
 
     # methods
     def recurse(self, sign):
@@ -133,8 +143,15 @@ class Statement:
         operation.update({name: [self._name, sign, None]})
         return Statement(name, statement, operation, named_area)
 
+    def _operation(self, other, sign):
+        name = utils.random_name()
+        named_area = {**self._named_areas, **other._named_areas}
+        statement = {**self._statement, **other._statement}
+        operation = Statement._make_operation(self, other, name, sign)
+        return name, named_area, statement, operation
+
     # static function
-    def _make_opperation(self, other, name, sign):
+    def _make_operation(self, other, name, sign):
         operation = self._operation.copy()
         operation.update(other._operation)
         operation.update({name: [self._name, sign, other._name]})
@@ -165,8 +182,10 @@ class Statement:
             return f'(.{op[0]}; - .{op[2]};)->.{name};'
         elif op[1] in ['>', '>>', '<', '<<']:
             return f'(.{op[0]}; {op[1]};)->.{name};'
-        elif op[1] == '.':
-            print('intersection is not supported in this version')
+        elif op[1] in ['node','way','rel','nwr']:
+            return f'{op[1]}.{op[0]}.{op[2]}->.{name};'
+        else:
+            print(f'Operation {op[1]} is not supported or is wrong')
             quit()
 
     @staticmethod
@@ -180,8 +199,19 @@ class Statement:
                     s += f'["{key}"="{value}"]'
         elif isinstance(tags, str):
             for tag in tags.split(','):
-                s += f'[{tag}]'
+                s += Statement._non_dict_tag(tag)
         elif isinstance(tags, list):
             for tag in tags:
-                s += f'[{tag}]'
+                s += Statement._non_dict_tag(tag)
         return s
+
+    @staticmethod
+    def _non_dict_tag(tag):
+        if tag.find('=') == -1:
+            return f'["{tag}"]'
+        else:
+            key, value = tag.split('=')
+            return f'["{key}"="{value}"]'
+
+
+
