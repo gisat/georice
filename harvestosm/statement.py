@@ -76,7 +76,7 @@ class Statement:
             statement = {name: [typ, area, tags]}
             return cls(name, statement)
 
-    def Union(self, *args, **kwargs):
+    def union(self, *args, **kwargs):
         '''Return union of statement objects'''
         s = self
         for arg in args:
@@ -84,7 +84,7 @@ class Statement:
                 s += arg
         return s
 
-    def Difference(self, *args, **kwargs):
+    def difference(self, *args, **kwargs):
         '''Return difference of statement objects'''
         s = self
         for arg in args:
@@ -92,7 +92,7 @@ class Statement:
                 s -= arg
         return s
 
-    def Intersecton(self, other, type):
+    def intersecton(self, other, type):
         '''Return union of statement objects'''
         name, named_area, statement, operation = Statement._operation(self, other, type)
         return Statement(name, statement, operation, named_area)
@@ -214,6 +214,3 @@ class Statement:
         else:
             key, value = tag.split('=')
             return f'["{key}"="{value}"]'
-
-
-

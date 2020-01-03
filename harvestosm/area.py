@@ -13,19 +13,19 @@ class Area:
         self._name = utils.random_name()
 
     @classmethod
-    def from_shape(cls, shape, **kwargs):
+    def from_shape(cls, shape):
         """ Shapely objects with coords set as (lon,lat)"""
         coords = Area._get_coords(shape)
 
         return cls(coords, out='poly')
 
     @classmethod
-    def from_coords(cls, coords, **kwargs):
+    def from_coords(cls, coords):
         """ Coorodinates as tuple of tuples (lon,lat)"""
         return cls(coords, out='points')
 
     @classmethod
-    def from_bbox(cls, bbox, **kwargs):
+    def from_bbox(cls, bbox):
         """Bounding region (min_lat, min_lon, max_lat, max_lon) """
         coords=[(bbox[0],bbox[1]),(bbox[2],bbox[1]),(bbox[2],bbox[3]),(bbox[0],bbox[3])]
         return cls(coords, out='bbox')
