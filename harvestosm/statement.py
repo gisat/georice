@@ -4,7 +4,14 @@ from harvestosm.area import Area
 
 
 class Statement:
-    """
+    """ - new
+    Class Statement is used for generating of Overpass query statements i.e. node.area["key"="value"]->.Statement... for
+    specified osm element, area and tags.
+
+    Single statements are constructed by constructors Node, Way, Nwr and Rel. Relations are not fully supported in this
+    version. Relations can be the object of the query but have to be recursed down on way or node elements.
+
+    - old - rewrite
     Class Statement represent single Overpass query statement i.e. node.area["key"="value"]->.Statement
     Statements area constructed by constructors Node and Way (nvr and rel are not fully supported)
     Constructor inputs:
@@ -50,24 +57,29 @@ class Statement:
         self._named_areas = named_area
 
     @classmethod
-    def Node(cls, area, tags=None, name=None):
-       return Statement._constructor('node', area, tags, name)
+    def Node(cls, tags=None, name=None, **kwargs):
+        area = Statement._check_area(**kwargs)
+        return Statement._constructor('node', area, tags, name)
 
     @classmethod
-    def Way(cls, area, tags=None, name=None):
+    def Way(cls, tags=None, name=None, **kwargs):
+        area = Statement._check_area(**kwargs)
         return Statement._constructor('way', area, tags, name)
 
     @classmethod
-    def NWR(cls, area, tags=None, name=None):
+    def NWR(cls, tags=None, name=None, **kwargs):
+        area = Statement._check_area(**kwargs)
         return Statement._constructor('nwr', area, tags, name)
 
     @classmethod
-    def Rel(cls, area, tags=None, name=None):
+    def Rel(cls, tags=None, name=None, **kwargs):
+        area = Statement._check_area(**kwargs)
         return Statement._constructor('rel', area, tags, name)
 
     @classmethod
     def _constructor(cls, typ, area, tags=None, name=None):
-        if name is None: name = utils.random_name()
+        if name is None:
+            name = utils.random_name()
         if isinstance(area, Statement):
             return cls(name, {name: [typ, area._name, tags]}, named_area=area._statement)
         elif isinstance(area, Area):
@@ -76,7 +88,13 @@ class Statement:
             statement = {name: [typ, area, tags]}
             return cls(name, statement)
 
-    def union(self, *args, **kwargs):
+    #  property
+    @property
+    def statement(self):
+        return''.join(self._get_operation(n, s) if c =='_operation' else self._get_statements(n, s) for n, s, c in iter(self))
+
+    # methods
+    def union(self, *args):
         '''Return union of statement objects'''
         s = self
         for arg in args:
@@ -84,7 +102,7 @@ class Statement:
                 s += arg
         return s
 
-    def difference(self, *args, **kwargs):
+    def difference(self, *args):
         '''Return difference of statement objects'''
         s = self
         for arg in args:
@@ -92,12 +110,20 @@ class Statement:
                 s -= arg
         return s
 
-    def intersecton(self, other, type):
+    def intersection(self, other, type):
         '''Return union of statement objects'''
         name, named_area, statement, operation = Statement._operation(self, other, type)
         return Statement(name, statement, operation, named_area)
 
-    #  definitions of operations over the Statement object
+    def recurse(self, sign):
+        name = utils.random_name()
+        statement = self._statement
+        named_area = self._named_areas
+        operation = self._operation.copy()
+        operation.update({name: [self._name, sign, None]})
+        return Statement(name, statement, operation, named_area)
+
+    #  definitions of arithmetic and logical operations over the Statement object
     def __add__(self, other):
         name, named_area, statement, operation = Statement._operation(self, other, '+')
         return Statement(name, statement, operation, named_area)
@@ -132,19 +158,7 @@ class Statement:
     def __next__(self):
         return self
 
-    @property
-    def statement(self):
-        return''.join(self._get_operation(n, s) if c =='_operation' else self._get_statements(n, s) for n, s, c in iter(self))
-
-    # methods
-    def recurse(self, sign):
-        name = utils.random_name()
-        statement = self._statement
-        named_area = self._named_areas
-        operation = self._operation.copy()
-        operation.update({name: [self._name, sign, None]})
-        return Statement(name, statement, operation, named_area)
-
+    # internal methods
     def _operation(self, other, sign):
         name = utils.random_name()
         named_area = {**self._named_areas, **other._named_areas}
@@ -214,3 +228,15 @@ class Statement:
         else:
             key, value = tag.split('=')
             return f'["{key}"="{value}"]'
+
+    @staticmethod
+    def _check_area(**kwarg):
+        for key, value in kwarg.items():
+            if key == 'area':
+                return value
+            elif key == 'shape':
+                return Area.from_shape(value)
+            elif key == 'bbox':
+                return Area.from_bbox(value)
+            elif key == 'coords':
+                return Area.from_coords(value)

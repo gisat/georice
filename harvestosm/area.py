@@ -1,5 +1,6 @@
 from utils import utils
 
+# dodelat around
 
 class Area:
 
@@ -21,13 +22,13 @@ class Area:
 
     @classmethod
     def from_coords(cls, coords):
-        """ Coorodinates as tuple of tuples (lon,lat)"""
+        """ Coorodinates as list of coords tuples (lon,lat)"""
         return cls(coords, out='points')
 
     @classmethod
     def from_bbox(cls, bbox):
         """Bounding region (min_lat, min_lon, max_lat, max_lon) """
-        coords=[(bbox[0],bbox[1]),(bbox[2],bbox[1]),(bbox[2],bbox[3]),(bbox[0],bbox[3])]
+        coords = [(bbox[0], bbox[1]), (bbox[2], bbox[1]), (bbox[2], bbox[3]), (bbox[0], bbox[3])]
         return cls(coords, out='bbox')
 
     @property
@@ -39,7 +40,7 @@ class Area:
     @property
     def points(self):
         """Return overpass area by poly statement as string ie. return (poly: "lat1 lon1 lat2 lon2...")"""
-        process = ['_switch_pair_order', '_overpass_points']
+        process = ['_switch_pair_order', '_overpass_poly']
         return Area._execute_process(process, self.coords)
 
     @property
@@ -61,7 +62,7 @@ class Area:
 
     @staticmethod
     def _get_coords(shape):
-        """Extract coords fron shaply object"""
+        """Extract coords from shapely object"""
         if shape.geom_type == 'Polygon':
             return list(shape.exterior.coords)
         elif shape.geom_type in ['Point','LinearRing','LineString']:
@@ -77,14 +78,10 @@ class Area:
 
     @staticmethod
     def _dissolve_pair_list(pair_list):
-        """dissolve list of tupples to list of following elementssw
+        """dissolve list of tuples to list of following elements
         (used for generating overpass poly query)"""
         return [item for pair in pair_list for item in pair]
 
     @staticmethod
     def _overpass_poly(coords_list):
         return '(poly: "{}")'.format(' '.join([str(x) for x in coords_list]))
-
-    @staticmethod
-    def _overpass_points(coords_list):
-        return '("{}")'.format(' '.join([str(x) for x in coords_list]))

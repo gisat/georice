@@ -31,15 +31,14 @@ class TestStatement(unittest.TestCase):
         self.assertEqual(self.poly.poly, '(poly: "0.0 0.0 0.0 1.0 1.0 1.0 1.0 0.0 0.0 0.0")')
 
     def test_points(self):
-        self.assertEqual(self.poly.points, '("(0.0, 0.0) (0.0, 1.0) (1.0, 1.0) (1.0, 0.0) (0.0, 0.0)")')
+        self.assertEqual(self.poly.points, '(poly: "(0.0, 0.0) (0.0, 1.0) (1.0, 1.0) (1.0, 0.0) (0.0, 0.0)")')
 
     def test_bbox(self):
         self.assertEqual(self.poly.bbox, '(0.0,0.0,1.0,1.0)')
 
     def test_tuple_coords(self):
         tup = Area.from_coords(((0.0, 0.0), (1.0, 1.0)))
-        self.assertEqual(tup.points, '("(0.0, 0.0) (1.0, 1.0)")')
-
+        self.assertEqual(tup.points, '(poly: "(0.0, 0.0) (1.0, 1.0)")')
 
 if __name__ == '__main__':
     unittest.main()
