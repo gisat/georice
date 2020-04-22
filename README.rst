@@ -57,4 +57,12 @@ In any other use last used credentials are used and can not be set again.
 
 *Getting of rice map*
 
-Classification srcipt can be accesed via command
+Classification script can be accessed via command ``ricemap``. To generate rice map it is necessary to set orbit number,
+starting and ending date and orbit direction (default is descending path). Command ``ricemap`` has a option ``-a, --all``
+that aromatically generate rice maps for each combination of orbir number and orbit path and for longest time period
+
+Specific rice map can be obtained via subcommand ``get`` and modified by setting of several additional options.
+More info via option ``--help``
+
+
+
