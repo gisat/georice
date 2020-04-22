@@ -53,8 +53,7 @@ def load_config():
     with open(config_file, 'r') as cfg_file:
         config = json.load(cfg_file)
     if not all([os.path.exists(config['scn_output']), os.path.exists(config['rice_output'])]):
-        warnings.warn(f'Folders path "scn_output" and "rice_output" in config file have to be set.'
-                        f'Use georice.set_config()')
+        raise Exception(f'Folders path "scn_output" and "rice_output" in config file have to be set')
     else:
         return config
 

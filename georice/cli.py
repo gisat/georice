@@ -95,19 +95,19 @@ def set_config(key, value):
 
 def imagery(bbox, geopath, epsg, period, name, output):
     """Download Sentinel 1A/1B scenes from Sentinel Hub"""
-    from georice.imagery import GetSH
+    from georice.imagery import GetSentinel
     import geopandas
 
     if len(bbox) == 0 and len(geopath) == 0:
         click.echo('Command aborted. Is required to provide AOI as bbox or path to geofile')
         quit()
     elif len(bbox) == 0:
-        task = GetSH()
+        task = GetSentinel()
         geofile = geopandas.read_file(geopath)
         task.search(bbox=geofile, epsg=epsg, period=period, tile_name=name)
         click.echo(f'For given parameters: {len(task.scenes)} scenes was found\n')
     elif len(geopath) == 0:
-        task = GetSH()
+        task = GetSentinel()
         task.search(bbox=bbox, epsg=epsg, period=period, tile_name=name)
         click.echo(f'For given parameters: {len(task.scenes)} scenes were found')
 

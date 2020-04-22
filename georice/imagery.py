@@ -1,5 +1,5 @@
 import concurrent.futures
-import os, json
+import os
 from datetime import datetime, timedelta
 from urllib.parse import urlencode
 from numpy import block, ones
@@ -25,12 +25,10 @@ _SCENE = {'name': None,
           'geometry': None}
 
 
-class GetSH:
+class GetSentinel:
 
-    def __init__(self, sh_client_id=None, sh_client_secret=None, instance_id=None):
-        # get config file
+    def __init__(self):
         self.config = SHConfig()
-        # get base structure for input and scenes
         self.scenes = []
         self.aoi = None
         self.period = []
@@ -40,7 +38,6 @@ class GetSH:
         self._nheight = 0
 
     # methods
-    # search scene
     def search(self, bbox=None, epsg=None, period=None, tile_name='Tile', **kwargs):
         """
         set input parameters, then start processing of parametrs i.e. find avalible scens
@@ -93,39 +90,28 @@ class GetSH:
         params:
         path - path to output folder
         """
-
-        if path is None and self.setting["scn_output"]:
-            parent = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-            path = os.path.join(parent, self.setting["scn_output"])
-        elif path is None:
+        if path is None:
             path = self.setting["scn_output"]
         else:
             self.setting.update(scn_output=path)
             save_config(self.setting)
 
         if self.aoi.crs.value == 4326:
-            raise Exception('WGS84 is not supported in this version, please use UTM')
+            raise Exception('WGS84 is not supported in this version, please use coordination system with metric units')
 
         for n in range(len(self.scenes)):
             tiles = self.download_tiles(self.scenes[n])
             blocks = [tiles[i:i + self._nwidth] for i in range(0, len(tiles), self._nwidth)]
             blocks.reverse()
             array = block(blocks)
-            self.mosaic(path, array, self.scenes[n]['name'])
+            self._save_raster(path, array, self.scenes[n]['name'])
             del tiles
-
-    def _set_wh(self):
-        """set number of n 10000m long tiles"""
-        x0, y0 = self.aoi.lower_left
-        xe, ye = self.aoi.upper_right
-        self._nwidth = round(abs(x0 - xe) / (self.setting['img_width'] * self.setting['resx']))
-        self._nheight = round(abs(y0 - ye) / (self.setting['img_height'] * self.setting['resy']))
 
     def download_tiles(self, scene):
         self.request(scene, next(self.grid))
         with concurrent.futures.ThreadPoolExecutor() as pool:
             results = pool.map(self.request, repeat(scene), [bbox for bbox in self.grid])
-            return [res for res in results if res is not None]
+            return [res for res in results]
 
     def request(self, scene, bbox):
         evalscript = '''//VERSION=3
@@ -174,6 +160,13 @@ class GetSH:
             return array
         else:
             return ones(shape=(self.setting['img_width'], self.setting['img_height'])) * self.setting['nodata']
+
+    def _set_wh(self):
+        """set number of n 10000m long tiles"""
+        x0, y0 = self.aoi.lower_left
+        xe, ye = self.aoi.upper_right
+        self._nwidth = round(abs(x0 - xe) / (self.setting['img_width'] * self.setting['resx']))
+        self._nheight = round(abs(y0 - ye) / (self.setting['img_height'] * self.setting['resy']))
 
     # geometry
     @staticmethod
@@ -269,9 +262,7 @@ class GetSH:
         return '_'.join([scene["sat_name"], self.tile_name, scene["polarization"], scene["orbitDirection"][:3],
                          scene['rel_orbit_num'], scene['time'], 'txxxxxx.tif'])
 
-    def mosaic(self, path, array, name):
-        """
-        """
+    def _save_raster(self, path, array, name):
         x, _ = self.aoi.lower_left
         _, y = self.aoi.upper_right
         transform = Affine(a=self.setting['resx'], b=0, c=x, d=0, e=-self.setting['resy'], f=y)
@@ -284,6 +275,5 @@ class GetSH:
                    'crs': self.aoi.crs.opengis_string,
                    'transform': transform}
 
-        # Write the mosaic raster to disk
         with raster_open(os.path.join(path, name), "w", **profile) as dest:
             dest.write(array, 1)

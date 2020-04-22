@@ -1,4 +1,4 @@
-from .imagery import GetSH
+from .imagery import GetSentinel
 from .ricemap import Ricemap
 from .utils import *
 
@@ -7,7 +7,7 @@ class Georice:
 
     def __init__(self):
         self.config = load_config()
-        self._imagery = GetSH()
+        self._imagery = GetSentinel()
         self._ricemap = Ricemap()
 
     @staticmethod
