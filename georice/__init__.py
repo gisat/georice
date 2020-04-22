@@ -1,6 +1,6 @@
 from .imagery import GetSH
 from .ricemap import Ricemap
-from .utils import load_config, save_config, set_sh, show_sh
+from .utils import *
 
 
 class Georice:

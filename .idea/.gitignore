@@ -1,0 +1,6 @@
+# Default ignored files
+/workspace.xml
+
+# debug files
+file.log
+debug.py

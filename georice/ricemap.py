@@ -1,5 +1,5 @@
 import subprocess
-from georice.utils import load_config
+from .utils import load_config
 import os
 
 

@@ -28,3 +28,4 @@ task.ricemap_get('018', ('20180701', '20180804'), 'DES')
 
 print('')
 
+import georice

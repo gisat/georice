@@ -1,0 +1,9 @@
+
+/test/
+/output/
+/georice.egg-info/
+
+main.py
+
+/georice/debug.py
+/georice/file.log

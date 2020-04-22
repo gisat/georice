@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from setuptools import setup, find_packages
 
 def readme():
@@ -16,7 +18,8 @@ setup(
         "sentinelhub",
         "rasterio",
         "numpy",
-        "click"],
+        "click",
+        "geopandas"],
     zip_safe=False,
     include_package_data=True,
     classifiers=[

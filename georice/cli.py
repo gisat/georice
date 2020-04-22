@@ -87,13 +87,13 @@ def set_config(key, value):
 @click.option('--epsg', '-e','epsg', type=str, default=None, required=False,
               help='Epsg code of bbox projection')
 @click.option('--period', '-p', 'period', type=(str, str), default=None, required=True,
-              help='Time period in format YYYY-MM-DD. e.g. 2018-01-01 2018-01-01')
-@click.option('--tile_name', '-t', 'tile_name', type=str, default='Tile', required=False, help='Tile name')
+              help='Time period in format YYYYMMDD. e.g. 20180101 20180101')
+@click.option('--name', '-n', 'name', type=str, default='Tile', required=False, help='Tile name')
 @click.option('--output', '-o', 'output', type=str, default=None, required=False,
               help='Path to output folder. If not set, path saved to config file is used. To see actual path use'
                    'command --info ')
 
-def imagery(bbox, geopath, epsg, period, tile_name, output):
+def imagery(bbox, geopath, epsg, period, name, output):
     """Download Sentinel 1A/1B scenes from Sentinel Hub"""
     from georice.imagery import GetSH
     import geopandas
@@ -104,11 +104,11 @@ def imagery(bbox, geopath, epsg, period, tile_name, output):
     elif len(bbox) == 0:
         task = GetSH()
         geofile = geopandas.read_file(geopath)
-        task.search(bbox=geofile, epsg=epsg, period=period, tile_name=tile_name)
+        task.search(bbox=geofile, epsg=epsg, period=period, tile_name=name)
         click.echo(f'For given parameters: {len(task.scenes)} scenes was found\n')
     elif len(geopath) == 0:
         task = GetSH()
-        task.search(bbox=bbox, epsg=epsg, period=period, tile_name=tile_name)
+        task.search(bbox=bbox, epsg=epsg, period=period, tile_name=name)
         click.echo(f'For given parameters: {len(task.scenes)} scenes were found')
 
     if len(task.scenes) > 0:

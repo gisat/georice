@@ -1,0 +1,23 @@
+Metadata-Version: 1.1
+Name: georice
+Version: 0.1
+Summary: Part of Georice processor responsible acquisition of scenes for given aoi  from Sentinel hub 
+Home-page: UNKNOWN
+Author: Michal opletal
+Author-email: michal.opletal@gisat.cz
+License: UNKNOWN
+Description: *****************
+        GeoRice processor
+        *****************
+        
+        *(pre version of text)*
+        
+        GeoRice processor create classified maps of presence of rice fields based on Sentinel 1A and Sentinel 1B imagery.
+        
+        Processor consisted from two modules
+        
+        #. rice module - contain GetSH class that for given aoi and period return sentinel's scenes to specified output folder
+        #. *classification*
+        
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3.6
