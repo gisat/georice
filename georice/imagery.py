@@ -5,6 +5,7 @@ from urllib.parse import urlencode
 from numpy import block, ones
 from rasterio import open as raster_open
 from rasterio.transform import Affine
+from rasterio.warp import calculate_default_transform
 from requests import get
 from sentinelhub import BBox, SentinelHubRequest, SHConfig, MimeType
 from itertools import repeat
@@ -21,21 +22,19 @@ _SCENE = {'name': None,
           'rel_orbit_num': None,
           'from_time': None,
           'to_time': None,
-          'time': None,
-          'geometry': None}
+          'time': None}
 
 
 class GetSentinel:
 
     def __init__(self):
         self.config = SHConfig()
-        self._scenes = []
         self.aoi = None
+        self.epsg = None
         self.period = []
         self.tile_name = ''
         self.setting = load_config()
-        self._nwidth = 0
-        self._nheight = 0
+        self._scenes = []
 
     @property
     def scenes(self):
@@ -57,6 +56,7 @@ class GetSentinel:
         :param tile_name: str
         :param kwargs: additional parameters
         """
+        self.epsg = epsg
         self.aoi = self._set_bbox(bbox, epsg)
         self.period = [self._srt2time(time, '%Y%m%d').isoformat() for time in period]
         self.tile_name = tile_name
@@ -93,26 +93,27 @@ class GetSentinel:
     # download tiles
     def dump(self, path=None):
         """
+        Get
         params:
         path - path to output folder
         """
-        self._set_wh()
+        if self.epsg == 4326:
+            self.aoi = self.aoi.transform(3857)
+
+        nx, _ = self._set_wh()
         if path is None:
             path = self.setting["scn_output"]
         else:
             self.setting.update(scn_output=path)
             save_config(self.setting)
 
-        if self.aoi.crs.value == 4326:
-            raise Exception('WGS84 is not supported in this version, please use coordination system with metric units')
-
         for n in range(len(self._scenes)):
             tiles = self.download_tiles(self._scenes[n])
-            blocks = [tiles[i:i + self._nwidth] for i in range(0, len(tiles), self._nwidth)]
+            blocks = [tiles[i:i + nx] for i in range(0, len(tiles), nx)]
             blocks.reverse()
             array = block(blocks)
             self._save_raster(path, array, self._scenes[n]['name'])
-            del tiles
+            del tiles, array
 
     def download_tiles(self, scene):
         self.request(scene, next(self.grid))
@@ -172,8 +173,9 @@ class GetSentinel:
         """set number of n 10000m long tiles"""
         x0, y0 = self.aoi.lower_left
         xe, ye = self.aoi.upper_right
-        self._nwidth = round(abs(x0 - xe) / (self.setting['img_width'] * self.setting['resx']))
-        self._nheight = round(abs(y0 - ye) / (self.setting['img_height'] * self.setting['resy']))
+        nx = round(abs(x0 - xe) / (self.setting['img_width'] * self.setting['resx']))
+        ny = round(abs(y0 - ye) / (self.setting['img_height'] * self.setting['resy']))
+        return nx, ny
 
     # geometry
     @staticmethod
@@ -270,17 +272,35 @@ class GetSentinel:
                          scene['rel_orbit_num'], scene['time'], 'txxxxxx.tif'])
 
     def _save_raster(self, path, array, name):
-        x, _ = self.aoi.lower_left
-        _, y = self.aoi.upper_right
-        transform = Affine(a=self.setting['resx'], b=0, c=x, d=0, e=-self.setting['resy'], f=y)
-        profile = {'driver': 'GTiff',
-                   'dtype': 'float32',
-                   'nodata': self.setting['nodata'],
-                   'width': self.setting['img_width'] * self._nwidth,
-                   'height': self.setting['img_height'] * self._nheight,
-                   'count': 1,
-                   'crs': self.aoi.crs.opengis_string,
-                   'transform': transform}
+        src_w, src_h = array.shape
+        if self.aoi.crs.value == str(self.epsg):
+            x, _ = self.aoi.lower_left
+            _, y = self.aoi.upper_right
+            transform = Affine(a=self.setting['resx'], b=0, c=x, d=0, e=-self.setting['resy'], f=y)
+            profile = {'driver': 'GTiff',
+                       'dtype': 'float32',
+                       'nodata': self.setting['nodata'],
+                       'width': src_w,
+                       'height': src_h,
+                       'count': 1,
+                       'crs': self.aoi.crs.opengis_string,
+                       'transform': transform}
+        else:
+            src = {'init': f'EPSG:{self.aoi.crs.value}'}
+            dst = {'init': f'EPSG:{str(self.epsg)}'}
+            left, bottom = self.aoi.lower_left
+            right, top = self.aoi.upper_right
+            self.aoi = self.aoi.transform(self.epsg)
+            transform, width, height = calculate_default_transform(src, dst, src_w, src_h, left=left, bottom=bottom,
+                                                                   right=right, top=top)
+            profile = {'driver': 'GTiff',
+                       'dtype': 'float32',
+                       'nodata': self.setting['nodata'],
+                       'width': width,
+                       'height': height,
+                       'count': 1,
+                       'crs': self.aoi.crs.opengis_string,
+                       'transform': transform}
 
         with raster_open(os.path.join(path, name), "w", **profile) as dest:
-            dest.write(array, 1)
+                dest.write(array, 1)
