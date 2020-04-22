@@ -1,6 +1,9 @@
+#!/usr/bin/env python
+
 from .imagery import GetSentinel
 from .ricemap import Ricemap
 from .utils import *
+import os
 
 
 class Georice:
@@ -11,7 +14,7 @@ class Georice:
         self._ricemap = Ricemap()
 
     @staticmethod
-    def set_SH_credentials(**kwargs):
+    def set_credentials(**kwargs):
         """
         Save sentinel hub credentials into SHConfig. Credentials are:
         sh_client_id
@@ -26,7 +29,7 @@ class Georice:
                 raise Exception(f'Key: {key} was not in expected keys  (sh_client_id, sh_client_secret, instance_id)')
 
     @staticmethod
-    def show_SH_credentials():
+    def show_credentials():
         """Show actual settingo of Sentinel Hub Credentials"""
         show_sh()
 
@@ -49,7 +52,7 @@ class Georice:
         """
         save_config(kwargs)
 
-    def find_scenes(self, bbox=None, epsg=None, period=None, tile_name='Tile', **kwargs):
+    def find_scenes(self, bbox=None, epsg=None, period=None, tile_name='Tile'):
         """
         Find Sentinel 1 scenes from Sentinel Hub
         :param bbox: list of coordinates representing bbox or object with __geo_interface__ and bbox attribute
@@ -59,12 +62,12 @@ class Georice:
         :param kwargs: additional parameters
 
         """
-        self._imagery.search(bbox, epsg, period, tile_name, **kwargs)
+        self._imagery.search(bbox, epsg, period, tile_name)
 
     @property
     def scenes(self):
         """Return list of founded scenes"""
-        if len(self._imagery.scenes) > 0:
+        if len(self._imagery._scenes) > 0:
             return self._imagery.scenes
         else:
             print(f'For given input parameters 0 scenes were found')
@@ -95,6 +98,16 @@ class Georice:
         delete - delete used scenes; type: bool; default = True
         """
         self._ricemap.ricemap_get(orbit_number, period, direct, inter, lzw, mask, nr, delete)
+
+    def delete_scenes(self):
+        with os.scandir(self.config['scn_output']) as files:
+            for file in files:
+                if file.name[:2] == 'S1' and file.name.split('.')[1] == 'tif':
+                    os.remove(file.path)
+
+
+
+
 
 
 

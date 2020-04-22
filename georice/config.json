@@ -7,7 +7,7 @@
     "ASC",
     "DES"
   ],
-  "nodata": 0,
+  "nodata": -999,
   "time_range": 3600,
   "scn_output": "C:\\Michal\\gisat\\projects\\Euro_Cube\\output",
   "rice_output": "C:\\Michal\\gisat\\projects\\Euro_Cube\\output",

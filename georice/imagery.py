@@ -16,7 +16,7 @@ _SCENE = {'name': None,
           'acquisitionMode': None,
           'polarizationMode': None,
           'polarization': None,
-          'orbitDirection': None,
+          'orbit_path': None,
           'orbit_num': None,
           'rel_orbit_num': None,
           'from_time': None,
@@ -29,7 +29,7 @@ class GetSentinel:
 
     def __init__(self):
         self.config = SHConfig()
-        self.scenes = []
+        self._scenes = []
         self.aoi = None
         self.period = []
         self.tile_name = ''
@@ -37,10 +37,20 @@ class GetSentinel:
         self._nwidth = 0
         self._nheight = 0
 
+    @property
+    def scenes(self):
+        """Print list of founded scenes"""
+        if len(self._scenes) > 0:
+            print(f'Total number of scenes {len(self._scenes)} in period {self.period[0]} / {self.period[1]}')
+            for index, scene in enumerate(self._scenes):
+                print(f'No{index}: Satelite: {scene["sat_name"]}, polarization: {scene["polarization"]}, '
+                      f'rel. orbit number: {scene["rel_orbit_num"]}, orbit path: {scene["orbit_path"]}')
+
+
     # methods
-    def search(self, bbox=None, epsg=None, period=None, tile_name='Tile', **kwargs):
+    def search(self, bbox=None, epsg=None, period=None, tile_name='Tile'):
         """
-        set input parameters, then start processing of parametrs i.e. find avalible scens
+        set input parameters, then start processing of parametrs i.e. find available scenes
         :param bbox: list of coordinates representing bbox or object with __geo_interface__ and bbox attribute
         :param epsg: int
         :param period: tuple (str, str). date format YYYYMMDD
@@ -50,23 +60,16 @@ class GetSentinel:
         self.aoi = self._set_bbox(bbox, epsg)
         self.period = [self._srt2time(time, '%Y%m%d').isoformat() for time in period]
         self.tile_name = tile_name
-        self._set_wh()
 
-        if len(kwargs) > 0:
-            self.setting.update(kwargs)
-        # find available scenes for given parameters
         scenes = self._wsf_query()
-        if len(scenes) == 0:
-            raise Exception('No scenes find for given set o input parameters')
-        else:
+
+        if len(scenes) > 0:
             while len(scenes) > 0:
                 scene = scenes.pop(0)
-                # test on time
-                time = scene['from_time']
                 try:
-                    if self._time_in_range(time - timedelta(seconds=self.setting['time_range']),
-                                           time + timedelta(seconds=self.setting['time_range']),
-                                           scenes[0]['from_time']):
+                    start_period = scene['from_time'] - timedelta(seconds=self.setting['time_range'])
+                    end_period = scene['from_time'] + timedelta(seconds=self.setting['time_range'])
+                    if self._time_in_range(start_period, end_period, scenes[0]['from_time']):
                         scene.update(from_time=scenes[0]['from_time'])
                         self._scene_update(scene)
                         scenes.pop(0)
@@ -75,6 +78,9 @@ class GetSentinel:
                         scenes.pop(0)
                 except IndexError:
                     self._scene_update(scene)
+        else:
+            raise Exception('No scenes find for given set of input parameters')
+
 
     def _scene_update(self, scene):
         if scene['polarizationMode'] == 'DV':
@@ -82,7 +88,7 @@ class GetSentinel:
                 tmp = scene.copy()
                 tmp['polarization'] = polar
                 tmp['name'] = self._get_img_name(tmp)
-                self.scenes.append(tmp)
+                self._scenes.append(tmp)
 
     # download tiles
     def dump(self, path=None):
@@ -90,6 +96,7 @@ class GetSentinel:
         params:
         path - path to output folder
         """
+        self._set_wh()
         if path is None:
             path = self.setting["scn_output"]
         else:
@@ -99,12 +106,12 @@ class GetSentinel:
         if self.aoi.crs.value == 4326:
             raise Exception('WGS84 is not supported in this version, please use coordination system with metric units')
 
-        for n in range(len(self.scenes)):
-            tiles = self.download_tiles(self.scenes[n])
+        for n in range(len(self._scenes)):
+            tiles = self.download_tiles(self._scenes[n])
             blocks = [tiles[i:i + self._nwidth] for i in range(0, len(tiles), self._nwidth)]
             blocks.reverse()
             array = block(blocks)
-            self._save_raster(path, array, self.scenes[n]['name'])
+            self._save_raster(path, array, self._scenes[n]['name'])
             del tiles
 
     def download_tiles(self, scene):
@@ -138,7 +145,7 @@ class GetSentinel:
                         },
                         "acquisitionMode": "IW",
                         "polarization": "DV",
-                        "orbitDirection ": scene['orbitDirection']
+                        "orbitDirection ": scene['orbit_path']
                     },
                     "processing": {
                         "backCoeff": "GAMMA0_ELLIPSOID",
@@ -225,7 +232,7 @@ class GetSentinel:
         tmp['sat_name'] = parts[0]
         tmp['acquisitionMode'] = parts[1]
         tmp['polarizationMode'] = parts[3][-2:]
-        tmp['orbitDirection'] = scene['orbitDirection']
+        tmp['orbit_path'] = scene['orbitDirection']
         tmp['orbit_num'] = parts[6]
         tmp['rel_orbit_num'] = self._get_rel_orbit_num(parts[0], parts[6])
         tmp['from_time'] = self._srt2time(parts[4], '%Y%m%dT%H%M%S')
@@ -259,7 +266,7 @@ class GetSentinel:
 
     def _get_img_name(self, scene):
         # satellite-name_S2-tile-name_polarization_path_relative-orbit-number_date-txxxxxx.tif
-        return '_'.join([scene["sat_name"], self.tile_name, scene["polarization"], scene["orbitDirection"][:3],
+        return '_'.join([scene["sat_name"], self.tile_name, scene["polarization"], scene["orbit_path"][:3],
                          scene['rel_orbit_num'], scene['time'], 'txxxxxx.tif'])
 
     def _save_raster(self, path, array, name):

@@ -50,6 +50,3 @@ class Ricemap:
             command.append('-nr')
         subprocess.run(' '.join(command), shell=True)
         print(f'Ricemap saved into folder: {config_rice["rice_output"]}')
-
-    def _delete_scene(self):
-        pass
