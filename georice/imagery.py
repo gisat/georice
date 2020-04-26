@@ -10,6 +10,7 @@ from requests import get
 from sentinelhub import BBox, SentinelHubRequest, SHConfig, MimeType
 from itertools import repeat
 from .utils import load_config, save_config
+from math import ceil
 
 
 _SCENE = {'name': None,
@@ -173,8 +174,8 @@ class GetSentinel:
         """set number of n 10000m long tiles"""
         x0, y0 = self.aoi.lower_left
         xe, ye = self.aoi.upper_right
-        nx = round(abs(x0 - xe) / (self.setting['img_width'] * self.setting['resx']))
-        ny = round(abs(y0 - ye) / (self.setting['img_height'] * self.setting['resy']))
+        nx = ceil(abs(x0 - xe) / (self.setting['img_width'] * self.setting['resx']))
+        ny = ceil(abs(y0 - ye) / (self.setting['img_height'] * self.setting['resy']))
         return nx, ny
 
     # geometry
@@ -292,7 +293,7 @@ class GetSentinel:
             right, top = self.aoi.upper_right
             self.aoi = self.aoi.transform(self.epsg)
             transform, width, height = calculate_default_transform(src, dst, src_w, src_h, left=left, bottom=bottom,
-                                                                   right=right, top=top)
+                                                                   right=right, top=top, dst_width=src_w, dst_height=src_h)
             profile = {'driver': 'GTiff',
                        'dtype': 'float32',
                        'nodata': self.setting['nodata'],

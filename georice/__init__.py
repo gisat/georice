@@ -100,6 +100,7 @@ class Georice:
         self._ricemap.ricemap_get(orbit_number, period, direct, inter, lzw, mask, nr, delete)
 
     def delete_scenes(self):
+        # pridat jmeno tilu
         with os.scandir(self.config['scn_output']) as files:
             for file in files:
                 if file.name[:2] == 'S1' and file.name.split('.')[1] == 'tif':
