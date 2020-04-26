@@ -15,6 +15,12 @@ specifying  of Sentinel hub credentials:
 * client_secret
 * instance_id
 
+*Install*
+
+`` $ git clone https://github.com/gisat/georice.git ``
+`` $ cd georice ``
+`` $ python setup.py develop ``
+
 Processor can be access as a command line interface or as a python package.
 
 **Command line interface**

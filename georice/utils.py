@@ -30,6 +30,11 @@ def show_sh():
     for key in ['sh_client_id', 'sh_client_secret', 'instance_id']:
         print(f'{key} : {config[key]}')
 
+def show_config():
+    config = load_config()
+    print('Actual setting of Sentinel Hub credentials:')
+    for key in ['sh_client_id', 'sh_client_secret', 'instance_id']:
+        print(f'{key} : {config[key]}')
 
 def save_config(update):
     """ Method save the configuration file."""
@@ -53,7 +58,7 @@ def load_config():
     with open(config_file, 'r') as cfg_file:
         config = json.load(cfg_file)
     if not all([os.path.exists(config['scn_output']), os.path.exists(config['rice_output'])]):
-        raise Exception(f'Folders path "scn_output" and "rice_output" in config file have to be set')
+        warnings.warn(f'Folders path "scn_output" and "rice_output" in config file have to be set')
     else:
         return config
 

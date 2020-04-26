@@ -52,6 +52,26 @@ class Georice:
         """
         save_config(kwargs)
 
+
+    @staticmethod
+    def show_config(**kwargs):
+        """Save setting of config file
+
+        Parameters:
+        polar - polarization; type: list; values VV, VH; default = ['VV','VH']; - used for filtering scenes
+        orbit_path - orbit path; type: list; values ASC - ascending, DES - descending; default =['ASC','DES]; - used for filtering scenes
+        scn_output - path to folder were scenes will be downloaded; type: str; required;
+        rice_output - path to folder were will be saved generated rice maps; type: str; required;
+        nodata - no data value; type: int; default = -999;
+        timerange - used for filtering a merging S1B scenes which were acquired withing the time range; type: inf; default = 3600 s
+        wsf_verison - type: str; default = '1.0.0'
+        img_height - height of img in pixels; type: int; defualt = 1000;
+        img_width - width of img in pixels; type: int; defualt = 1000;
+        resx - resolution in x axis; type: int; default = 10;
+        resy - resolution in y axis; type: int; default = 10;
+        """
+        save_config(kwargs)
+
     def find_scenes(self, bbox=None, epsg=None, period=None, tile_name='Tile'):
         """
         Find Sentinel 1 scenes from Sentinel Hub
