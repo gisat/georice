@@ -24,17 +24,22 @@ def set_sh(name, value):
     print(f'{name} : {value} was set into SHconfig')
     config.save()
 
+
 def show_sh():
     config = SHConfig()
     print('Actual setting of Sentinel Hub credentials:')
     for key in ['sh_client_id', 'sh_client_secret', 'instance_id']:
         print(f'{key} : {config[key]}')
 
+
 def show_config():
     config = load_config()
-    print('Actual setting of Sentinel Hub credentials:')
-    for key in ['sh_client_id', 'sh_client_secret', 'instance_id']:
-        print(f'{key} : {config[key]}')
+    print('Actual setting of Georice processor:')
+    for key, value in config.items():
+        print(f'{key} : {value}')
+    if not all([os.path.exists(config['scn_output']), os.path.exists(config['rice_output'])]):
+        warnings.warn(f'Folders path "scn_output" and "rice_output" in config file have to be set')
+
 
 def save_config(update):
     """ Method save the configuration file."""
@@ -56,11 +61,7 @@ def load_config():
     if not os.path.isfile(config_file):
         raise IOError('Configuration file does not exist: %s' % os.path.abspath(config_file))
     with open(config_file, 'r') as cfg_file:
-        config = json.load(cfg_file)
-    if not all([os.path.exists(config['scn_output']), os.path.exists(config['rice_output'])]):
-        warnings.warn(f'Folders path "scn_output" and "rice_output" in config file have to be set')
-    else:
-        return config
+        return json.load(cfg_file)
 
 
 def reset_config():

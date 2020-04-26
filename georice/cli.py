@@ -6,7 +6,7 @@ import json
 import os
 import subprocess
 
-from georice.utils import set_sh, show_sh, load_config
+from georice.utils import set_sh, show_sh, load_config, show_config
 
 
 @click.group()
@@ -26,12 +26,6 @@ def sentinel(show):
     """Configuration of Sentinel Hub credentials"""
     if show:
         show_sh()
-        # config = SHConfig()
-        # click.echo(f"Actual configuration of Sentinel hub config file:\n"
-        #            f"client_id:\t {config['sh_client_id']}\n"
-        #            f"client_secret:\t {config['sh_client_secret']}\n"
-        #            f"instance_id:\t {config['instance_id']}\n")
-
 
 @sentinel.command('client_id')
 @click.argument('value')
@@ -63,10 +57,7 @@ def client(value):
 def config(show):
     """Configuration of georice configuration file"""
     if show:
-        config_rice = load_config()
-        click.echo('Actual setting of georice is:')
-        for k, v in config_rice.items():
-            click.echo(f'{k} : {v}')
+        show_config()
 
 
 @config.command('set')
