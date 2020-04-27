@@ -98,6 +98,9 @@ class Georice:
 
     def ricemap_get_all(self, delete=True):
         """
+        Georice - generation of classified rice map
+        "no_data":0, "rice":1, "urban_tree":2, "water":3, "other":4
+
         Generete rice maps for all combination of orbit number, orbit path and period and save them
         into rice_output path defined
         """
@@ -106,7 +109,7 @@ class Georice:
     def ricemap_get(self, orbit_number, period, direct, inter=False, lzw=False, mask=False, nr=False,
                 delete=True):
         """
-         Georie - generation of classified rice map
+         Georice - generation of classified rice map
         "no_data":0, "rice":1, "urban_tree":2, "water":3, "other":4
 
         Generete rice maps for given parameters of orbit number, orbit path and period and save them

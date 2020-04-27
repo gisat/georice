@@ -13,7 +13,7 @@ from georice.utils import set_sh, show_sh, load_config, show_config
 @click.version_option()
 def main():
     """
-    Georie - generation of classified rice map
+    Georice - generation of classified rice map
     "no_data":0, "rice":1, "urban_tree":2, "water":3, "other":4
     """
     pass

@@ -291,7 +291,7 @@ class GetSentinel:
             dst = {'init': f'EPSG:{str(self.epsg)}'}
             left, bottom = self.aoi.lower_left
             right, top = self.aoi.upper_right
-            self.aoi = self.aoi.transform(self.epsg)
+            original = self.aoi.transform(self.epsg)
             transform, width, height = calculate_default_transform(src, dst, src_w, src_h, left=left, bottom=bottom,
                                                                    right=right, top=top, dst_width=src_w, dst_height=src_h)
             profile = {'driver': 'GTiff',
@@ -300,7 +300,7 @@ class GetSentinel:
                        'width': width,
                        'height': height,
                        'count': 1,
-                       'crs': self.aoi.crs.opengis_string,
+                       'crs': original.crs.opengis_string,
                        'transform': transform}
 
         with raster_open(os.path.join(path, name), "w", **profile) as dest:
