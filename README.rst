@@ -8,7 +8,8 @@ Description
 ###########
 
 Georice processor creates classified maps of the presence of rice fields based on Sentinel 1A and Sentinel 1B imagery.
-Sentinel 1 scenes are acquired from `Sentinel-hub <https://www.sentinel-hub.com/>`_. Processor can not be used without
+Classification script was creted by CNES.Sentinel 1 scenes are acquired from
+`Sentinel-hub <https://www.sentinel-hub.com/>`_. Processor can not be used without
 specifying  of Sentinel hub credentials:
 
 * client_id
@@ -17,9 +18,9 @@ specifying  of Sentinel hub credentials:
 
 *Install*
 
-`` $ git clone https://github.com/gisat/georice.git ``
-`` $ cd georice ``
-`` $ python setup.py develop ``
+    `` $ git clone https://github.com/gisat/georice.git ``
+    `` $ cd georice ``
+    `` $ python setup.py develop ``
 
 Processor can be access as a command line interface or as a python package.
 

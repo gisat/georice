@@ -44,8 +44,8 @@ class GetSentinel:
             print(f'Total number of scenes {len(self._scenes)} in period {self.period[0]} / {self.period[1]}')
             for index, scene in enumerate(self._scenes):
                 print(f'No{index}: Satelite: {scene["sat_name"]}, polarization: {scene["polarization"]}, '
-                      f'rel. orbit number: {scene["rel_orbit_num"]}, orbit path: {scene["orbit_path"]}')
-
+                      f'rel. orbit number: {scene["rel_orbit_num"]}, orbit path: {scene["orbit_path"]}, '
+                      f'img name: {scene["name"]}')
 
     # methods
     def search(self, bbox=None, epsg=None, period=None, tile_name='Tile'):

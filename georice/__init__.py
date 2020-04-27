@@ -2,7 +2,7 @@
 
 from .imagery import GetSentinel
 from .ricemap import Ricemap
-from .utils import *
+from .utils import load_config, show_config, save_config, set_sh, show_sh
 import os
 
 
@@ -70,7 +70,7 @@ class Georice:
         resx - resolution in x axis; type: int; default = 10;
         resy - resolution in y axis; type: int; default = 10;
         """
-        save_config(kwargs)
+        show_config()
 
     def find_scenes(self, bbox=None, epsg=None, period=None, tile_name='Tile'):
         """
@@ -106,6 +106,9 @@ class Georice:
     def ricemap_get(self, orbit_number, period, direct, inter=False, lzw=False, mask=False, nr=False,
                 delete=True):
         """
+         Georie - generation of classified rice map
+        "no_data":0, "rice":1, "urban_tree":2, "water":3, "other":4
+
         Generete rice maps for given parameters of orbit number, orbit path and period and save them
         into rice_output path defined.
         orbit_number - orbit number; type: str; - three digits string representation i.e. '018'

@@ -21,7 +21,7 @@ SETTING = {
 def set_sh(name, value):
     config = SHConfig()
     setattr(config, name, value)
-    print(f'{name} : {value} was set into SHconfig')
+    print(f'{name} : {value} was set into SHConfig')
     config.save()
 
 
@@ -43,13 +43,16 @@ def show_config():
 
 def save_config(update):
     """ Method save the configuration file."""
-
     config = load_config()
     for key, value in update.items():
         if key not in load_config().keys():
             raise Exception(f'Key "{key}" is not defined ind config file')
         else:
-            config.update({key: value})
+            if key in ['scn_output', 'rice_output']:
+                os.makedirs(value, exist_ok=True)
+                config.update({key: value})
+            else:
+                config.update({key: value})
 
     config_file = os.path.join(os.path.dirname(__file__), 'config.json')
     with open(config_file, 'w') as cfg_file:
