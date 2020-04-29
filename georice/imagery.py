@@ -29,12 +29,12 @@ _SCENE = {'name': None,
 class GetSentinel:
 
     def __init__(self):
-        self.config = SHConfig()
+        self.SHConfig = SHConfig()
         self.aoi = None
         self.epsg = None
         self.period = []
         self.tile_name = ''
-        self.setting = load_config()
+        self.config = load_config()
         self._scenes = []
 
     @property
@@ -72,8 +72,8 @@ class GetSentinel:
             while len(scenes) > 0:
                 scene = scenes.pop(0)
                 try:
-                    start_period = scene['from_time'] - timedelta(seconds=self.setting['time_range'])
-                    end_period = scene['from_time'] + timedelta(seconds=self.setting['time_range'])
+                    start_period = scene['from_time'] - timedelta(seconds=self.config['time_range'])
+                    end_period = scene['from_time'] + timedelta(seconds=self.config['time_range'])
                     if self._time_in_range(start_period, end_period, scenes[0]['from_time']):
                         scene.update(from_time=scenes[0]['from_time'])
                         self._scene_update(scene)
@@ -89,7 +89,7 @@ class GetSentinel:
 
     def _scene_update(self, scene):
         if scene['polarizationMode'] == 'DV':
-            for polar in self.setting['polar']:
+            for polar in self.config['polar']:
                 tmp = scene.copy()
                 tmp['polarization'] = polar
                 tmp['name'] = self._get_img_name(tmp)
@@ -159,7 +159,7 @@ class GetSentinel:
                 SentinelHubRequest.output_response('default', MimeType.TIFF, )
             ],
             bbox=bbox,
-            resolution=[self.setting['resx'], self.setting['resy']],
+            resolution=[self.config['resx'], self.config['resy']],
             config=SHConfig()
         )
 
@@ -167,14 +167,14 @@ class GetSentinel:
         if array is not None:
             return array
         else:
-            return ones(shape=(self.setting['img_width'], self.setting['img_height'])) * self.setting['nodata']
+            return ones(shape=(self.config['img_width'], self.config['img_height'])) * self.config['nodata']
 
     def _set_wh(self):
         """set number of n 10000m long tiles"""
         x0, y0 = self.aoi.lower_left
         xe, ye = self.aoi.upper_right
-        nx = ceil(abs(x0 - xe) / (self.setting['img_width'] * self.setting['resx']))
-        ny = ceil(abs(y0 - ye) / (self.setting['img_height'] * self.setting['resy']))
+        nx = ceil(abs(x0 - xe) / (self.config['img_width'] * self.config['resx']))
+        ny = ceil(abs(y0 - ye) / (self.config['img_height'] * self.config['resy']))
         return nx, ny
 
     # geometry
@@ -190,7 +190,7 @@ class GetSentinel:
     def grid(self):
         x0, y0 = self.aoi.lower_left
         xe, ye = self.aoi.upper_right
-        j, length = 1, self.setting['img_width'] * self.setting['resx']
+        j, length = 1, self.config['img_width'] * self.config['resx']
         x, y = x0, y0
         while y < ye:
             i = 1
@@ -208,7 +208,7 @@ class GetSentinel:
         :return: list o scenes properties for given input parameters
         :rtype: list
         """
-        main_url = '{}/{}?'.format('https://services.sentinel-hub.com/ogc/wfs', self.config.instance_id)
+        main_url = '{}/{}?'.format('https://services.sentinel-hub.com/ogc/wfs', self.SHConfig.instance_id)
         params = {
             'REQUEST': 'GetFeature',
             'TYPENAMES': 'DSS3',
@@ -219,7 +219,7 @@ class GetSentinel:
             'MAXCC': 100.0 * 100,
             'MAXFEATURES': 100,
             'FEATURE_OFFSET': 0,
-            'VERSION': self.setting['wsf_version']
+            'VERSION': self.config['wsf_version']
         }
         url = main_url + urlencode(params)
         response = get(url)
@@ -276,10 +276,10 @@ class GetSentinel:
         if self.aoi.crs.value == str(self.epsg):
             x, _ = self.aoi.lower_left
             _, y = self.aoi.upper_right
-            transform = Affine(a=self.setting['resx'], b=0, c=x, d=0, e=-self.setting['resy'], f=y)
+            transform = Affine(a=self.config['resx'], b=0, c=x, d=0, e=-self.config['resy'], f=y)
             profile = {'driver': 'GTiff',
                        'dtype': 'float32',
-                       'nodata': self.setting['nodata'],
+                       'nodata': self.config['nodata'],
                        'width': src_w,
                        'height': src_h,
                        'count': 1,
@@ -295,14 +295,14 @@ class GetSentinel:
                                                                    right=right, top=top, dst_width=src_w, dst_height=src_h)
             profile = {'driver': 'GTiff',
                        'dtype': 'float32',
-                       'nodata': self.setting['nodata'],
+                       'nodata': self.config['nodata'],
                        'width': width,
                        'height': height,
                        'count': 1,
                        'crs': original.crs.opengis_string,
                        'transform': transform}
 
-        path = os.path.join(self.setting["scn_output"], self.tile_name)
+        path = os.path.join(self.config["output"], self.tile_name, 'scenes')
         if not os.path.exists(path):
             os.makedirs(path, exist_ok=True)
 

@@ -8,8 +8,7 @@ SETTING = {
     "orbit_path": ['ASC', 'DES'],
     "nodata": -999,
     "time_range": 3600,
-    "scn_output": "",
-    "rice_output": "",
+    "output": "",
     "wsf_version": "1.0.0",
     "img_height": 1000,
     "img_width": 1000,
@@ -37,8 +36,8 @@ def show_config():
     print('Actual setting of Georice processor:')
     for key, value in config.items():
         print(f'{key} : {value}')
-    if not all([os.path.exists(config['scn_output']), os.path.exists(config['rice_output'])]):
-        warnings.warn(f'Folders path "scn_output" and "rice_output" in config file have to be set')
+    if not os.path.exists(config['output']):
+        warnings.warn(f' Output Folders path "output" in config file have to be set')
 
 
 def save_config(update):
@@ -48,7 +47,7 @@ def save_config(update):
         if key not in load_config().keys():
             raise Exception(f'Key "{key}" is not defined ind config file')
         else:
-            if key in ['scn_output', 'rice_output']:
+            if key == 'output':
                 os.makedirs(value, exist_ok=True)
                 config.update({key: value})
             else:

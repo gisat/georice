@@ -46,9 +46,11 @@ In any other use last used credentials are used and can not be set again.
 
 *Setting of georice processor*
 
-| In the base, two folders 'scn_output'  and 'rice_output'  have to be specified in georice config berofer usage of processor. The folder 'scn_output' is used as a temporal storage of Sentinel 1 scenes. Resulting rice maps are saved into folder 'rice_output'.
+| Working folder 'output' have to be specified in georice config file before usage of processor.
 | ``$ georice config set scn_output <folder path>``
-| ``$ georice config set rice_output <folder path>``
+| Into 'output' folder are downloaded Sentinel 1 scenes used for generation of rice maps and rice map itself. Rice maps
+| and scenes are saved into the folder corresponding to 'tile name' specifying particular AOI. Scenes are saved into own
+| subfolder 'scenes'.
 
 *Getting of Sentinel 1 scenes*
 
@@ -65,8 +67,9 @@ In any other use last used credentials are used and can not be set again.
 *Getting of rice map*
 
 Classification script can be accessed via command ``ricemap``. To generate rice map it is necessary to set orbit number,
-starting and ending date and orbit direction (default is descending path). Command ``ricemap`` has a option ``-a, --all``
-that aromatically generate rice maps for each combination of orbir number and orbit path and for longest time period
+starting and ending date and orbit direction (default is descending path) and tile name set for particular AOI.
+Command ``ricemap`` has a option ``-a, --all`` that automatically generate rice maps for each combination of orbit number
+and orbit path and for longest time period
 
 Specific rice map can be obtained via subcommand ``get`` and modified by setting of several additional options.
 More info via option ``--help``

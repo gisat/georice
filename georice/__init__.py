@@ -94,20 +94,22 @@ class Georice:
 
     def get_scenes(self):
         self._imagery.dump()
-        print(f'Scenes were downoladed into {self.config["scn_output"]}')
+        print(f'Scenes were downoladed into {self.config["output"]}')
 
-    def ricemap_get_all(self, delete=True):
+    def ricemap_get_all(self, tile_name):
         """
         Georice - generation of classified rice map
         "no_data":0, "rice":1, "urban_tree":2, "water":3, "other":4
 
-        Generete rice maps for all combination of orbit number, orbit path and period and save them
-        into rice_output path defined
-        """
-        self._ricemap.ricemap_get_all(delete)
+        Generete rice maps for all combination of orbit number, orbit path and period found in scence folder for given
+        tile name.
 
-    def ricemap_get(self, orbit_number, period, direct, inter=False, lzw=False, mask=False, nr=False,
-                delete=True):
+        :param
+        :param tile_name: str, specify tile name
+        """
+        self._ricemap.ricemap_get_all(tile_name)
+
+    def ricemap_get(self, orbit_number, period, direct, inter=False, lzw=False, mask=False, nr=False):
         """
          Georice - generation of classified rice map
         "no_data":0, "rice":1, "urban_tree":2, "water":3, "other":4
@@ -123,11 +125,12 @@ class Georice:
         nr - diable automatic reprojection to EPSG:4326, type: bool; default = True
         delete - delete used scenes; type: bool; default = True
         """
-        self._ricemap.ricemap_get(orbit_number, period, direct, inter, lzw, mask, nr, delete)
+        self._ricemap.ricemap_get(orbit_number, period, direct, inter, lzw, mask, nr)
 
-    def delete_scenes(self):
-        # pridat jmeno tilu
-        with os.scandir(self.config['scn_output']) as files:
+    def delete_scenes(self, tile_name):
+        """Dele all downloaded scenes in folder for selected tile name """
+        path = os.path.join(self.config['scn_output'], tile_name)
+        with os.scandir(path) as files:
             for file in files:
                 if file.name[:2] == 'S1' and file.name.split('.')[1] == 'tif':
                     os.remove(file.path)

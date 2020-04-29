@@ -80,12 +80,12 @@ def set_config(key, value):
               help='Epsg code of bbox projection')
 @click.option('--period', '-p', 'period', type=(str, str), default=None, required=True,
               help='Time period in format YYYYMMDD. e.g. 20180101 20180101')
-@click.option('--name', '-n', 'name', type=str, default='Tile', required=False, help='Tile name')
+@click.option('--tile', '-t', 'tile', type=str, default='Tile', required=False, help='Tile name')
 @click.option('--output', '-o', 'output', type=str, default=None, required=False,
               help='Path to output folder. If not set, path saved to config file is used. To see actual path use'
                    'command --info ')
 
-def imagery(bbox, geopath, epsg, period, name, output):
+def imagery(bbox, geopath, epsg, period, tile, output):
     """Download Sentinel 1A/1B scenes from Sentinel Hub"""
     from .imagery import GetSentinel
     import geopandas
@@ -96,11 +96,11 @@ def imagery(bbox, geopath, epsg, period, name, output):
     elif len(bbox) == 0:
         task = GetSentinel()
         geofile = geopandas.read_file(geopath)
-        task.search(bbox=geofile, epsg=epsg, period=period, tile_name=name)
+        task.search(bbox=geofile, epsg=epsg, period=period, tile_name=tile)
         click.echo(f'For given parameters: {len(task._scenes)} scenes was found\n')
     elif len(geopath) == 0:
         task = GetSentinel()
-        task.search(bbox=bbox, epsg=epsg, period=period, tile_name=name)
+        task.search(bbox=bbox, epsg=epsg, period=period, tile_name=tile)
         click.echo(f'For given parameters: {len(task._scenes)} scenes were found')
 
     if len(task._scenes) > 0:
@@ -108,19 +108,20 @@ def imagery(bbox, geopath, epsg, period, name, output):
             task.dump()
         else:
             task.dump(output)
-        click.echo(f'Scenes were downloaded in folder {task.setting["rice_output"]}')
+        click.echo(f'Scenes were downloaded in folder {task.config["output"]}/{tile}/scenes')
 
 
 @main.group('ricemap', invoke_without_command=True)
-@click.option('--all', '-a', 'a', is_flag=True, required=False,
+@click.option('--all', '-a', 'all', is_flag=True, required=False,
               help='Generate rice maps for all combinations of orbit number, '
                    'direction a period found at scene directory')
-def ricemap(a):
+@click.option('--tile', '-t', 'tile',  required=True, help='Tile name')
+def ricemap(all, tile):
     """Generate rice map from Sentinel imagery"""
-    if a:
-        config_rice = load_config()
+    if all:
+        config = load_config()
         period, orb_num, orb_path = set(), set(), set()
-        with os.scandir(config_rice['scn_output']) as files:
+        with os.scandir(config['output']) as files:
             for file in files:
                 if file.is_file():
                     parsed = file.name.split('_')
@@ -129,13 +130,15 @@ def ricemap(a):
                     orb_path.add(parsed[3])
         for orbit in orb_path:
             for num in orb_num:
-                command = ['ricemap.py', config_rice['scn_output'], num, min(period), max(period),
-                           config_rice['rice_output'], '-d', orbit]
+                scene_path = os.path.join(config['output'], tile, 'scenes')
+                command = ['ricemap.py', scene_path, num, min(period), max(period),
+                           config['output'], '-d', orbit]
                 subprocess.run(' '.join(command), shell=True)
                 click.echo(f'Ricemap for orbit path/orbit number/period: {orbit}/{num}/{min(period)}/{max(period)} '
-                           f'saved at folder: {config_rice["rice_output"]}')
+                           f'saved at folder: {config["output"]}/{tile}')
 
 @ricemap.command('get')
+@click.argument('tile')
 @click.argument('orbit_number')
 @click.argument('starting_date')
 @click.argument('ending_date')
@@ -149,14 +152,15 @@ def ricemap(a):
               help='generate and write rice, trees, water, other and nodata masks')
 @click.option('--noreproject', '-nr', 'nr', is_flag=True, required=False,
               help='diable automatic reprojection to EPSG:4326')
-def get(orbit_number, starting_date, ending_date, direct, inter, lzw, mask, nr):
+def get(tile, orbit_number, starting_date, ending_date, direct, inter, lzw, mask, nr):
     """
     Set ricemap commands.
     NOTE: starting_date / ending_date => YYYYMMDD, inclusive
     """
-    config_rice = load_config()
-    command = ['ricemap.py', config_rice['scn_output'], orbit_number, starting_date, ending_date,
-               config_rice['rice_output']]
+    config = load_config()
+    scene_path = os.path.join(config['output'], tile, 'scenes')
+    command = ['ricemap.py', scene_path, orbit_number, starting_date, ending_date,
+               config['output']]
     if direct:
         command.append('-d ' + direct)
     if inter:
@@ -168,4 +172,4 @@ def get(orbit_number, starting_date, ending_date, direct, inter, lzw, mask, nr):
     if nr:
         command.append('-nr')
     subprocess.run(' '.join(command), shell=True)
-    click.echo(f'Rice map saved into folder: {config_rice["rice_output"]}')
+    click.echo(f'Rice map saved into folder: {config["output"]}/{tile}')
