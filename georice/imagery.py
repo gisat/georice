@@ -54,12 +54,16 @@ class GetSentinel:
         :param bbox: list of coordinates representing bbox or object with __geo_interface__ and bbox attribute
         :param epsg: int
         :param period: tuple (str, str). date format YYYYMMDD
-        :param tile_name: str
+        :param tile_name: str, serve to name the AOI, corresponding scenes and rice maps are download and saved into
+               folder of the same name
         :param kwargs: additional parameters
         """
         self.epsg = epsg
         self.aoi = self._set_bbox(bbox, epsg)
         self.period = [self._srt2time(time, '%Y%m%d').isoformat() for time in period]
+        if tile_name.find('_') >0 :
+            raise ValueError('Tile name cannot contain underscore character "_". Underscore character is used to split '
+                             'scene meta data writen into resulting scene name')
         self.tile_name = tile_name
 
         scenes = self._wsf_query()
@@ -92,7 +96,7 @@ class GetSentinel:
                 self._scenes.append(tmp)
 
     # download tiles
-    def dump(self, path=None):
+    def dump(self):
         """
         Get
         params:
@@ -102,18 +106,13 @@ class GetSentinel:
             self.aoi = self.aoi.transform(3857)
 
         nx, _ = self._set_wh()
-        if path is None:
-            path = self.setting["scn_output"]
-        else:
-            self.setting.update(scn_output=path)
-            save_config(self.setting)
 
         for n in range(len(self._scenes)):
             tiles = self.download_tiles(self._scenes[n])
             blocks = [tiles[i:i + nx] for i in range(0, len(tiles), nx)]
             blocks.reverse()
             array = block(blocks)
-            self._save_raster(path, array, self._scenes[n]['name'])
+            self._save_raster(array, self._scenes[n]['name'])
             del tiles, array
 
     def download_tiles(self, scene):
@@ -272,7 +271,7 @@ class GetSentinel:
         return '_'.join([scene["sat_name"], self.tile_name, scene["polarization"], scene["orbit_path"][:3],
                          scene['rel_orbit_num'], scene['time'], 'txxxxxx.tif'])
 
-    def _save_raster(self, path, array, name):
+    def _save_raster(self, array, name):
         src_w, src_h = array.shape
         if self.aoi.crs.value == str(self.epsg):
             x, _ = self.aoi.lower_left
@@ -302,6 +301,10 @@ class GetSentinel:
                        'count': 1,
                        'crs': original.crs.opengis_string,
                        'transform': transform}
+
+        path = os.path.join(self.setting["scn_output"], self.tile_name)
+        if not os.path.exists(path):
+            os.makedirs(path, exist_ok=True)
 
         with raster_open(os.path.join(path, name), "w", **profile) as dest:
                 dest.write(array, 1)
