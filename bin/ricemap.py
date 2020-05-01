@@ -564,7 +564,7 @@ if __name__ == '__main__':
     # ------------------------------------------------------------------------------------------------------------------
     # initialize processing
     
-    output_path = os.path.join(output_path, product[1])
+    output_path = os.path.join(output_path, product[1], 'ricemaps')
     if not os.path.exists(output_path):
         os.makedirs(output_path)
     

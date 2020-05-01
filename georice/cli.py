@@ -81,11 +81,7 @@ def set_config(key, value):
 @click.option('--period', '-p', 'period', type=(str, str), default=None, required=True,
               help='Time period in format YYYYMMDD. e.g. 20180101 20180101')
 @click.option('--tile', '-t', 'tile', type=str, default='Tile', required=False, help='Tile name')
-@click.option('--output', '-o', 'output', type=str, default=None, required=False,
-              help='Path to output folder. If not set, path saved to config file is used. To see actual path use'
-                   'command --info ')
-
-def imagery(bbox, geopath, epsg, period, tile, output):
+def imagery(bbox, geopath, epsg, period, tile):
     """Download Sentinel 1A/1B scenes from Sentinel Hub"""
     from .imagery import GetSentinel
     import geopandas
@@ -104,10 +100,7 @@ def imagery(bbox, geopath, epsg, period, tile, output):
         click.echo(f'For given parameters: {len(task._scenes)} scenes were found')
 
     if len(task._scenes) > 0:
-        if output is None:
-            task.dump()
-        else:
-            task.dump(output)
+        task.dump()
         click.echo(f'Scenes were downloaded in folder {task.config["output"]}/{tile}/scenes')
 
 
@@ -120,8 +113,9 @@ def ricemap(all, tile):
     """Generate rice map from Sentinel imagery"""
     if all:
         config = load_config()
+        scene_path = os.path.join(config['output'], tile, 'scenes')
         period, orb_num, orb_path = set(), set(), set()
-        with os.scandir(config['output']) as files:
+        with os.scandir(scene_path) as files:
             for file in files:
                 if file.is_file():
                     parsed = file.name.split('_')
@@ -130,12 +124,11 @@ def ricemap(all, tile):
                     orb_path.add(parsed[3])
         for orbit in orb_path:
             for num in orb_num:
-                scene_path = os.path.join(config['output'], tile, 'scenes')
                 command = ['ricemap.py', scene_path, num, min(period), max(period),
                            config['output'], '-d', orbit]
                 subprocess.run(' '.join(command), shell=True)
                 click.echo(f'Ricemap for orbit path/orbit number/period: {orbit}/{num}/{min(period)}/{max(period)} '
-                           f'saved at folder: {config["output"]}/{tile}')
+                           f'saved at folder: {os.path.join(config["output"], tile)}')
 
 @ricemap.command('get')
 @click.argument('tile')
@@ -172,4 +165,4 @@ def get(tile, orbit_number, starting_date, ending_date, direct, inter, lzw, mask
     if nr:
         command.append('-nr')
     subprocess.run(' '.join(command), shell=True)
-    click.echo(f'Rice map saved into folder: {config["output"]}/{tile}')
+    click.echo(f'Rice map saved into folder: {os.path.join(config["output"], tile)}')

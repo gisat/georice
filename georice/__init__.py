@@ -3,7 +3,9 @@
 from .imagery import GetSentinel
 from .ricemap import Ricemap
 from .utils import load_config, show_config, save_config, set_sh, show_sh
-import os
+import os, shutil
+from rasterio import open
+from matplotlib.pyplot import imshow
 
 
 class Georice:
@@ -12,6 +14,18 @@ class Georice:
         self.config = load_config()
         self._imagery = GetSentinel()
         self._ricemap = Ricemap()
+
+        self._get_tile_attr()
+
+    def _get_tile_attr(self):
+        for file in os.scandir(self.config['output']):
+            if file.is_dir():
+                setattr(self, file.name, Dir(file.path))
+
+    @property
+    def tiles(self):
+        """Return list of tiles"""
+        return [file.name for file in os.scandir(self.config['output']) if file.is_dir()]
 
     @staticmethod
     def set_credentials(**kwargs):
@@ -52,9 +66,8 @@ class Georice:
         """
         save_config(kwargs)
 
-
     @staticmethod
-    def show_config(**kwargs):
+    def show_config():
         """Save setting of config file
 
         Parameters:
@@ -74,7 +87,7 @@ class Georice:
 
     def find_scenes(self, bbox=None, epsg=None, period=None, tile_name='Tile'):
         """
-        Find Sentinel 1 scenes from Sentinel Hub
+        Find Sentinel 1 scenes from Sentinel Hub and return their list
         :param bbox: list of coordinates representing bbox or object with __geo_interface__ and bbox attribute
         :param epsg: int
         :param period: tuple (str, str). date format YYYYMMDD
@@ -82,11 +95,8 @@ class Georice:
         :param kwargs: additional parameters
 
         """
+        #
         self._imagery.search(bbox, epsg, period, tile_name)
-
-    @property
-    def scenes(self):
-        """Return list of founded scenes"""
         if len(self._imagery._scenes) > 0:
             return self._imagery.scenes
         else:
@@ -95,6 +105,7 @@ class Georice:
     def get_scenes(self):
         self._imagery.dump()
         print(f'Scenes were downoladed into {self.config["output"]}')
+        self._get_tile_attr()
 
     def ricemap_get_all(self, tile_name):
         """
@@ -108,8 +119,9 @@ class Georice:
         :param tile_name: str, specify tile name
         """
         self._ricemap.ricemap_get_all(tile_name)
+        self._get_tile_attr()
 
-    def ricemap_get(self, orbit_number, period, direct, inter=False, lzw=False, mask=False, nr=False):
+    def ricemap_get(self, tile_name, orbit_number, period, direct, inter=False, lzw=False, mask=False, nr=False):
         """
          Georice - generation of classified rice map
         "no_data":0, "rice":1, "urban_tree":2, "water":3, "other":4
@@ -125,15 +137,36 @@ class Georice:
         nr - diable automatic reprojection to EPSG:4326, type: bool; default = True
         delete - delete used scenes; type: bool; default = True
         """
-        self._ricemap.ricemap_get(orbit_number, period, direct, inter, lzw, mask, nr)
+        self._ricemap.ricemap_get(tile_name, orbit_number, period, direct, inter, lzw, mask, nr)
+        self._get_tile_attr()
 
-    def delete_scenes(self, tile_name):
-        """Dele all downloaded scenes in folder for selected tile name """
-        path = os.path.join(self.config['scn_output'], tile_name)
-        with os.scandir(path) as files:
-            for file in files:
-                if file.name[:2] == 'S1' and file.name.split('.')[1] == 'tif':
-                    os.remove(file.path)
+
+class Dir:
+    def __init__(self, path):
+        self._path = path
+        for file in os.scandir(path):
+            if file.is_dir():
+                setattr(self, file.name, Dir(file.path))
+            elif file.is_file() and file.name.endswith(('tif', 'tiff')):
+                setattr(self, file.name.split('.')[0], Raster(file.name.split('.')[0], file.path))
+
+    def delete(self):
+        """delete directory and child directory"""
+        shutil.rmtree(self._path)
+
+
+class Raster:
+    def __init__(self, name, path):
+        self.name = name
+        self.path = path
+
+    def plot(self):
+        with open(self.path) as dataset:
+            imshow(dataset.read(1))
+
+    def array(self):
+        with open(self.path) as dataset:
+            return dataset.read(1)
 
 
 

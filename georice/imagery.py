@@ -9,7 +9,7 @@ from rasterio.warp import calculate_default_transform
 from requests import get
 from sentinelhub import BBox, SentinelHubRequest, SHConfig, MimeType
 from itertools import repeat
-from .utils import load_config, save_config
+from .utils import load_config
 from math import ceil
 
 
@@ -86,7 +86,6 @@ class GetSentinel:
         else:
             raise Exception('No scenes find for given set of input parameters')
 
-
     def _scene_update(self, scene):
         if scene['polarizationMode'] == 'DV':
             for polar in self.config['polar']:
@@ -98,10 +97,9 @@ class GetSentinel:
     # download tiles
     def dump(self):
         """
-        Get
-        params:
-        path - path to output folder
+        downlod of scenes
         """
+
         if self.epsg == 4326:
             self.aoi = self.aoi.transform(3857)
 

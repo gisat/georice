@@ -17,7 +17,7 @@ class Ricemap:
         """
         scene_path = os.path.join(self.output, tile_name, 'scenes')
         period, orb_num, orb_path = set(), set(), set()
-        with os.scandir(self.output) as files:
+        with os.scandir(scene_path) as files:
             for file in files:
                 if file.is_file():
                     parsed = file.name.split('_')
