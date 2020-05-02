@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import click
-from sentinelhub import SHConfig
 import json
 import os
 import subprocess
