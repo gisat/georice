@@ -105,15 +105,17 @@ def imagery(bbox, geopath, epsg, period, tile):
 
 
 @main.group('ricemap', invoke_without_command=True)
-@click.option('--all', '-a', 'all', is_flag=True, required=False,
+@click.option('--tile', '-t', 'tile', type=str, default='Tile', required=False, help='Tile name')
+@click.option('--all', '-a', 'a', is_flag=True, required=False,
               help='Generate rice maps for all combinations of orbit number, '
                    'direction a period found at scene directory')
-@click.option('--tile', '-t', 'tile',  required=True, help='Tile name')
-def ricemap(all, tile):
-    """Generate rice map from Sentinel imagery"""
-    if all:
-        config = load_config()
-        scene_path = os.path.join(config['output'], tile, 'scenes')
+def ricemap(tile, a):
+    """
+    Generate rice map from Sentinel imagery
+    Tile - tile name used for downolad of scenes
+    """
+    if a:
+        scene_path = os.path.join(load_config()['output'], tile, 'scenes')
         period, orb_num, orb_path = set(), set(), set()
         with os.scandir(scene_path) as files:
             for file in files:
@@ -128,13 +130,14 @@ def ricemap(all, tile):
                            config['output'], '-d', orbit]
                 subprocess.run(' '.join(command), shell=True)
                 click.echo(f'Ricemap for orbit path/orbit number/period: {orbit}/{num}/{min(period)}/{max(period)} '
-                           f'saved at folder: {os.path.join(config["output"], tile)}')
+                           f'saved at folder: {os.path.join(load_config()["output"], tile)}')
+
 
 @ricemap.command('get')
-@click.argument('tile')
 @click.argument('orbit_number')
 @click.argument('starting_date')
 @click.argument('ending_date')
+@click.option('--tile', '-t', 'tile', type=str, default='Tile', required=False, help='Tile name')
 @click.option('--direction', '-d', 'direct', default='DES', required=False, type=str,
               help='Orbit direction. default DES, velues (ASC / DES)')
 @click.option('--intermediate', '-i', 'inter', is_flag=True, required=False,
@@ -145,15 +148,13 @@ def ricemap(all, tile):
               help='generate and write rice, trees, water, other and nodata masks')
 @click.option('--noreproject', '-nr', 'nr', is_flag=True, required=False,
               help='diable automatic reprojection to EPSG:4326')
-def get(tile, orbit_number, starting_date, ending_date, direct, inter, lzw, mask, nr):
+def get(orbit_number, starting_date, ending_date, tile, direct, inter, lzw, mask, nr):
     """
-    Set ricemap commands.
+    Generate rice map for specyfic parameters.
     NOTE: starting_date / ending_date => YYYYMMDD, inclusive
     """
-    config = load_config()
-    scene_path = os.path.join(config['output'], tile, 'scenes')
-    command = ['ricemap.py', scene_path, orbit_number, starting_date, ending_date,
-               config['output']]
+    scene_path = os.path.join(load_config()['output'], tile, 'scenes')
+    command = ['ricemap.py', scene_path, orbit_number, starting_date, ending_date, load_config()['output']]
     if direct:
         command.append('-d ' + direct)
     if inter:
@@ -165,4 +166,4 @@ def get(tile, orbit_number, starting_date, ending_date, direct, inter, lzw, mask
     if nr:
         command.append('-nr')
     subprocess.run(' '.join(command), shell=True)
-    click.echo(f'Rice map saved into folder: {os.path.join(config["output"], tile)}')
+    click.echo(f'Rice map saved into folder: {os.path.join(load_config()["output"], tile)}')
