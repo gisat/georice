@@ -61,7 +61,7 @@ class GetSentinel:
         self.epsg = epsg
         self.aoi = self._set_bbox(bbox, epsg)
         self.period = [self._srt2time(time, '%Y%m%d').isoformat() for time in period]
-        if tile_name.find('_') >0 :
+        if tile_name.find('_') > 0:
             raise ValueError('Tile name cannot contain underscore character "_". Underscore character is used to split '
                              'scene meta data writen into resulting scene name')
         self.tile_name = tile_name
