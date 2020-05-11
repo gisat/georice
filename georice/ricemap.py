@@ -49,4 +49,3 @@ class Ricemap:
         if nr:
             command.append('-nr')
         subprocess.run(' '.join(command), shell=True)
-        print(f'Ricemap saved into folder: {self.output}')

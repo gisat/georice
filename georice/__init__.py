@@ -22,7 +22,6 @@ class Georice:
             if file.is_dir():
                 setattr(self, file.name, Dir(file.path))
 
-    @property
     def tiles(self):
         """Return list of tiles"""
         return [file.name for file in os.scandir(self.config['output']) if file.is_dir()]
@@ -104,7 +103,7 @@ class Georice:
 
     def get_scenes(self):
         self._imagery.dump()
-        print(f'Scenes were downoladed into {self.config["output"]}')
+        print(f'Scenes were downloaded into {self.config["output"]}/{self._imagery.tile_name}/scenes')
         self._get_tile_attr()
 
     def ricemap_get_all(self, tile_name):
@@ -139,16 +138,20 @@ class Georice:
         """
         self._ricemap.ricemap_get(tile_name, orbit_number, period, direct, inter, lzw, mask, nr)
         self._get_tile_attr()
+        print(f'Rice maps were downloaded into {self.config["output"]}/{self._imagery.tile_name}/ricemaps')
 
 
 class Dir:
     def __init__(self, path):
         self._path = path
-        for file in os.scandir(path):
+        for file in os.scandir(self._path):
             if file.is_dir():
                 setattr(self, file.name, Dir(file.path))
             elif file.is_file() and file.name.endswith(('tif', 'tiff')):
                 setattr(self, file.name.split('.')[0], Raster(file.name.split('.')[0], file.path))
+
+    def __call__(self):
+        return [file.name for file in os.scandir(self._path)]
 
     def delete(self):
         """delete directory and child directory"""
@@ -160,9 +163,9 @@ class Raster:
         self.name = name
         self.path = path
 
-    def plot(self):
+    def plot(self, **kwargs):
         with open(self.path) as dataset:
-            imshow(dataset.read(1))
+            imshow(dataset.read(1), **kwargs)
 
     def array(self):
         with open(self.path) as dataset:

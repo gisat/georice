@@ -14,7 +14,7 @@ from math import ceil
 
 
 _SCENE = {'name': None,
-          'sat_name': None,
+          'satellite': None,
           'acquisitionMode': None,
           'polarizationMode': None,
           'polarization': None,
@@ -43,9 +43,9 @@ class GetSentinel:
         if len(self._scenes) > 0:
             print(f'Total number of scenes {len(self._scenes)} in period {self.period[0]} / {self.period[1]}')
             for index, scene in enumerate(self._scenes):
-                print(f'No{index}: Satelite: {scene["sat_name"]}, polarization: {scene["polarization"]}, '
-                      f'rel. orbit number: {scene["rel_orbit_num"]}, orbit path: {scene["orbit_path"]}, '
-                      f'img name: {scene["name"]}')
+                print(f'{index} : satellite: {scene["satellite"]}, polarization: {scene["polarization"]}, '
+                      f'rel_orbit_num: {scene["rel_orbit_num"]}, orbit_path: {scene["orbit_path"]}, '
+                      f'img_name: {scene["name"]}')
 
     # methods
     def search(self, bbox=None, epsg=None, period=None, tile_name='Tile'):
@@ -188,16 +188,13 @@ class GetSentinel:
     def grid(self):
         x0, y0 = self.aoi.lower_left
         xe, ye = self.aoi.upper_right
-        j, length = 1, self.config['img_width'] * self.config['resx']
+        lx, ly =  self.config['img_width'] * self.config['resx'], self.config['img_width'] * self.config['resy']
         x, y = x0, y0
         while y < ye:
-            i = 1
             while x < xe:
-                yield BBox(bbox=((x, y), (x + length, y + length)), crs=self.aoi.crs)
-                x += length
-                i += 1
-            y += length
-            j += 1
+                yield BBox(bbox=((x, y), (x + lx, y + ly)), crs=self.aoi.crs)
+                x += lx
+            y += ly
             x = x0
 
     # wsf
@@ -229,7 +226,7 @@ class GetSentinel:
     def _parse_wsf(self, scene):
         tmp = _SCENE.copy()
         parts = scene['id'].split('_')
-        tmp['sat_name'] = parts[0]
+        tmp['satellite'] = parts[0]
         tmp['acquisitionMode'] = parts[1]
         tmp['polarizationMode'] = parts[3][-2:]
         tmp['orbit_path'] = scene['orbitDirection']
@@ -253,11 +250,11 @@ class GetSentinel:
         return datetime.strptime(time, patern)
 
     @staticmethod
-    def _get_rel_orbit_num(sat_name, abs_orbit_number):
+    def _get_rel_orbit_num(satellite, abs_orbit_number):
         orbit_number = int(abs_orbit_number.lstrip('0'))
-        if sat_name == 'S1A':
+        if satellite == 'S1A':
             rel_orbit_num = str(((orbit_number - 73) % 175) + 1)
-        elif sat_name == 'S1B':
+        elif satellite == 'S1B':
             rel_orbit_num = str(((orbit_number - 27) % 175) + 1)
 
         while len(rel_orbit_num) < 3:
@@ -266,7 +263,7 @@ class GetSentinel:
 
     def _get_img_name(self, scene):
         # satellite-name_S2-tile-name_polarization_path_relative-orbit-number_date-txxxxxx.tif
-        return '_'.join([scene["sat_name"], self.tile_name, scene["polarization"], scene["orbit_path"][:3],
+        return '_'.join([scene["satellite"], self.tile_name, scene["polarization"], scene["orbit_path"][:3],
                          scene['rel_orbit_num'], scene['time'], 'txxxxxx.tif'])
 
     def _save_raster(self, array, name):
