@@ -1,5 +1,5 @@
 {
-  "polar": [
+  "polar_modes": [
     "VV",
     "VH"
   ],
@@ -7,9 +7,9 @@
     "ASC",
     "DES"
   ],
-  "nodata": -999,
+  "nodata": 0,
   "time_range": 3600,
-  "output": "<yout output folder>",
+  "output": "C:\\Michal\\gisat\\projects\\Euro_Cube\\output",
   "wsf_version": "1.0.0",
   "img_height": 1000,
   "img_width": 1000,

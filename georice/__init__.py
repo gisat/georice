@@ -46,8 +46,7 @@ class Georice:
         """Show actual settingo of Sentinel Hub Credentials"""
         show_sh()
 
-    @staticmethod
-    def set_config(**kwargs):
+    def set_config(self, **kwargs):
         """Save setting of config file
 
         Parameters:
@@ -64,6 +63,7 @@ class Georice:
         resy - resolution in y axis; type: int; default = 10;
         """
         save_config(kwargs)
+        self.config = load_config()
 
     @staticmethod
     def show_config():
@@ -170,6 +170,10 @@ class Raster:
     def array(self):
         with open(self.path) as dataset:
             return dataset.read(1)
+
+    def delete(self):
+        """delete directory and child directory"""
+        shutil.rmtree(self.path)
 
 
 

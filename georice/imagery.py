@@ -11,6 +11,9 @@ from sentinelhub import BBox, SentinelHubRequest, SHConfig, MimeType
 from itertools import repeat
 from .utils import load_config
 from math import ceil
+from shapely.geometry import shape
+from shapely.ops import transform
+from pyproj import CRS, Transformer
 
 
 _SCENE = {'name': None,
@@ -30,11 +33,8 @@ class GetSentinel:
 
     def __init__(self):
         self.SHConfig = SHConfig()
-        self.aoi = None
-        self.epsg = None
         self.period = []
         self.tile_name = ''
-        self.config = load_config()
         self._scenes = []
 
     @property
@@ -58,13 +58,15 @@ class GetSentinel:
                folder of the same name
         :param kwargs: additional parameters
         """
+        self.config = load_config()
         self.epsg = epsg
         self.aoi = self._set_bbox(bbox, epsg)
         self.period = [self._srt2time(time, '%Y%m%d').isoformat() for time in period]
         if tile_name.find('_') > 0:
             raise ValueError('Tile name cannot contain underscore character "_". Underscore character is used to split '
                              'scene meta data writen into resulting scene name')
-        self.tile_name = tile_name
+        else:
+            self.tile_name = tile_name
 
         scenes = self._wsf_query()
 
@@ -99,7 +101,7 @@ class GetSentinel:
         """
         downlod of scenes
         """
-
+        self.config = load_config()
         if self.epsg == 4326:
             self.aoi = self.aoi.transform(3857)
 
@@ -188,7 +190,7 @@ class GetSentinel:
     def grid(self):
         x0, y0 = self.aoi.lower_left
         xe, ye = self.aoi.upper_right
-        lx, ly =  self.config['img_width'] * self.config['resx'], self.config['img_width'] * self.config['resy']
+        lx, ly = self.config['img_width'] * self.config['resx'], self.config['img_width'] * self.config['resy']
         x, y = x0, y0
         while y < ye:
             while x < xe:
@@ -303,3 +305,80 @@ class GetSentinel:
 
         with raster_open(os.path.join(path, name), "w", **profile) as dest:
                 dest.write(array, 1)
+
+
+class Scene:
+    """
+    Class to handle with SH scenes and their gometries
+    """
+
+    def __init__(self, tile_name, polar, geometry, crs, satellite, abs_orbit_num, from_time, to_time, orbit_path):
+        self.tile_name = tile_name
+        self.satellite = satellite
+        self.polar = polar
+        self.abs_orbit_num = abs_orbit_num
+        self.orbit_path = orbit_path
+        self.from_time = from_time
+        self.to_time = to_time
+        self.geometry = geometry
+        self.crs = crs
+
+    @classmethod
+    def from_geojson(cls, tile_name, geojson):
+        """
+        Create Scenes class from wsf Geojson
+        :param tile_name: str - Name of tile
+        :param geojson: json - geojson - from wsf SH
+        :return: List of
+        """
+        geometry = shape(geojson.get('geometry'))
+        try:
+            crs = CRS.from_string(geojson.get('geometry').get('crs').get('properties').get('name'))
+        except Exception:
+            crs = CRS.from_string(geojson.get('properties').get('crs'))
+        orbit_path = geojson.get('properties').get('orbitDirection')[:3]
+        satellite, polar, abs_orbit_num, from_time, to_time = Scene._parsename(geojson.get('properties').get('id'))
+
+        if polar == 'DV':
+            return cls(tile_name, polar, geometry, crs, satellite, abs_orbit_num, from_time, to_time, orbit_path)
+
+    @property
+    def name(self):
+        # satellite-name_S2-tile-name_polarization_path_relative-orbit-number_date-txxxxxx.tif
+        return '_'.join([self.satellite, self.tile_name, self.polar, self.orbit_path,
+                         self.rel_orbit_num, self.from_time.strftime('%Y%m%dT'), 'txxxxxx.tif'])
+
+    @property
+    def rel_orbit_num(self):
+        orbit_number = int(self.abs_orbit_num.lstrip('0'))
+        if self.satellite == 'S1A':
+            rel_orbit_num = str(((orbit_number - 73) % 175) + 1)
+        elif self.satellite == 'S1B':
+            rel_orbit_num = str(((orbit_number - 27) % 175) + 1)
+        while len(rel_orbit_num) < 3:
+            rel_orbit_num = '0' + rel_orbit_num
+        return rel_orbit_num
+
+    def transform(self, new_crs):
+        """
+        Transfomr coordinatres to new crs
+        :param new_crs: CRS as EPSG code (int or string) or Pyproj.CRS
+        :return: self
+        """
+        if isinstance(new_crs, CRS):
+            pass
+        elif isinstance(new_crs, (int, str)):
+            new_crs = CRS.from_epsg(new_crs)
+        else:
+            raise Exception('CRS should be Pyproj.CRS or epsg code given by int or str ')
+        project = Transformer.from_crs(self.crs, new_crs)
+        self.geometry = transform(project.transform, self.geometry)
+        self.crs = new_crs
+        return self
+
+    @staticmethod
+    def _parsename(name):
+        satellite, _, _, polar, from_time, to_time, orbit_num, _, _ = name.split('_')
+        from_time = datetime.strptime(from_time, '%Y%m%dT%H%M%S')
+        to_time = datetime.strptime(to_time, '%Y%m%dT%H%M%S')
+        return satellite, polar[-2:], orbit_num, from_time, to_time
