@@ -115,15 +115,15 @@ def ricemap(tile, a):
     """
     if a:
         scene_path = os.path.join(load_config()['output'], tile, 'scenes')
-        period, orb_num, orb_path = set(), set(), set()
+        period, orb_num, orbit_path = set(), set(), set()
         with os.scandir(scene_path) as files:
             for file in files:
                 if file.is_file():
                     parsed = file.name.split('_')
                     period.add(parsed[5])
                     orb_num.add(parsed[4])
-                    orb_path.add(parsed[3])
-        for orbit in orb_path:
+                    orbit_path.add(parsed[3])
+        for orbit in orbit_path:
             for num in orb_num:
                 command = ['ricemap.py', scene_path, num, min(period), max(period),
                            config['output'], '-d', orbit]
@@ -137,7 +137,7 @@ def ricemap(tile, a):
 @click.argument('starting_date')
 @click.argument('ending_date')
 @click.option('--tile', '-t', 'tile', type=str, default='Tile', required=False, help='Tile name')
-@click.option('--direction', '-d', 'direct', default='DES', required=False, type=str,
+@click.option('--orbit_path', '-o', 'orbit_path', default='DES', required=False, type=str,
               help='Orbit direction. default DES, velues (ASC / DES)')
 @click.option('--intermediate', '-i', 'inter', is_flag=True, required=False,
               help='write intermediate products (min/max/mean/max_increase)')
@@ -147,15 +147,15 @@ def ricemap(tile, a):
               help='generate and write rice, trees, water, other and nodata masks')
 @click.option('--noreproject', '-nr', 'nr', is_flag=True, required=False,
               help='diable automatic reprojection to EPSG:4326')
-def get(orbit_number, starting_date, ending_date, tile, direct, inter, lzw, mask, nr):
+def get(orbit_number, starting_date, ending_date, tile, orbit_path, inter, lzw, mask, nr):
     """
     Generate rice map for specyfic parameters.
     NOTE: starting_date / ending_date => YYYYMMDD, inclusive
     """
     scene_path = os.path.join(load_config()['output'], tile, 'scenes')
     command = ['ricemap.py', scene_path, orbit_number, starting_date, ending_date, load_config()['output']]
-    if direct:
-        command.append('-d ' + direct)
+    if orbit_path:
+        command.append('-d ' + orbit_path)
     if inter:
         command.append('-i')
     if lzw:

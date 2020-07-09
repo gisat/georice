@@ -1,7 +1,11 @@
 from sentinelhub import SHConfig
-import os
+import os, shutil
 import json
 import warnings
+from rasterio import open as rio_open
+from rasterio.merge import merge
+from matplotlib.pyplot import imshow
+
 
 SETTING = {
     "polar": ['VV', 'VH'],
@@ -72,3 +76,55 @@ def reset_config():
         raise IOError('Configuration file does not exist: %s' % os.path.abspath(config_file))
     with open(config_file, 'w') as cfg_file:
         json.dump(SETTING, cfg_file)
+
+
+def mosaic(images_paths):
+    output = images_paths[0].replace('part0-', '')
+    files_to_mosaic = [rio_open(path) for path in images_paths]
+    mosaic, out_trans = merge(files_to_mosaic)
+    out_profile = files_to_mosaic[0].profile.copy()
+    out_profile.update({"height": mosaic.shape[1], "width": mosaic.shape[2], "transform": out_trans})
+    with rio_open(output, 'w', **out_profile) as dataset:
+        dataset.write(mosaic)
+
+    for path, file in zip(images_paths, files_to_mosaic):
+        file.close()
+        os.remove(path)
+
+
+
+class Dir:
+    def __init__(self, path):
+        self._path = path
+        for file in os.scandir(self._path):
+            if file.is_dir():
+                setattr(self, file.name, Dir(file.path))
+            elif file.is_file() and file.name.endswith(('tif', 'tiff')):
+                setattr(self, file.name.split('.')[0], Img(file.name.split('.')[0], file.path))
+
+    def __call__(self):
+        return [file.name for file in os.scandir(self._path)]
+
+    def delete(self):
+        """delete directory and child directory"""
+        shutil.rmtree(self._path)
+
+    def file_paths(self):
+        return [file.path for file in os.scandir(self._path)]
+
+class Img:
+    def __init__(self, name, path):
+        self.name = name
+        self.path = path
+
+    def plot(self, **kwargs):
+        with rio_open(self.path, 'r') as dataset:
+            imshow(dataset.read(1), **kwargs)
+
+    def array(self):
+        with rio_open(self.path, 'r') as dataset:
+            return dataset.read(1)
+
+    def delete(self):
+        """delete directory and child directory"""
+        shutil.rmtree(self.path)

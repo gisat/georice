@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 
-from .imagery import GetSentinel
+from .imagery import GetSentinel, Geometry
 from .ricemap import Ricemap
-from .utils import load_config, show_config, save_config, set_sh, show_sh
-import os, shutil
-from rasterio import open
-from matplotlib.pyplot import imshow
-
+from .utils import load_config, show_config, save_config, set_sh, show_sh, Dir, mosaic
+import os
 
 class Georice:
 
@@ -46,8 +43,7 @@ class Georice:
         """Show actual settingo of Sentinel Hub Credentials"""
         show_sh()
 
-    @staticmethod
-    def set_config(**kwargs):
+    def set_config(self, **kwargs):
         """Save setting of config file
 
         Parameters:
@@ -64,6 +60,7 @@ class Georice:
         resy - resolution in y axis; type: int; default = 10;
         """
         save_config(kwargs)
+        self.config = load_config()
 
     @staticmethod
     def show_config():
@@ -84,43 +81,38 @@ class Georice:
         """
         show_config()
 
-    def find_scenes(self, bbox=None, epsg=None, period=None, tile_name='Tile'):
+    def find_scenes(self, bbox=None, epsg=None, period=None, info=True):
         """
         Find Sentinel 1 scenes from Sentinel Hub and return their list
-        :param bbox: list of coordinates representing bbox or object with __geo_interface__ and bbox attribute
-        :param epsg: int
+        :param bbox: list of coordinates representing bbox
+        :param epsg: int or str
         :param period: tuple (str, str). date format YYYYMMDD
-        :param tile_name: str
-        :param kwargs: additional parameters
-
+        :param info: bool, turn off/on writing down list of found scenes
         """
-        #
-        self._imagery.search(bbox, epsg, period, tile_name)
-        if len(self._imagery._scenes) > 0:
-            return self._imagery.scenes
-        else:
-            print(f'For given input parameters 0 scenes were found')
+        self._imagery.search(bbox, epsg, period)
+        if info:
+            self.scenes()
 
-    def get_scenes(self):
-        self._imagery.dump()
-        print(f'Scenes were downloaded into {self.config["output"]}/{self._imagery.tile_name}/scenes')
+    def scenes(self):
+        """Show found scenes"""
+        self._imagery.scenes()
+
+    def filter(self, inplace=False, **kwargs):
+        """
+        Provide filtering of found scenes according to given keyword arguments. Return the result of filtering, if
+        inplace (default: False) is True, fond scenes are overwrite by filter result
+        :param inplace: bool, default False, Overwrite scenes by filter result
+        :param kwargs: keyword filtering arguments
+        :return:
+        """
+        return self._imagery.filter(inplace, **kwargs)
+
+    def get_scenes(self, name):
+        self._imagery.download(name)
+        print(f'Scenes were downloaded into {self.config["output"]}/{name}/scenes')
         self._get_tile_attr()
 
-    def ricemap_get_all(self, tile_name):
-        """
-        Georice - generation of classified rice map
-        "no_data":0, "rice":1, "urban_tree":2, "water":3, "other":4
-
-        Generete rice maps for all combination of orbit number, orbit path and period found in scence folder for given
-        tile name.
-
-        :param
-        :param tile_name: str, specify tile name
-        """
-        self._ricemap.ricemap_get_all(tile_name)
-        self._get_tile_attr()
-
-    def ricemap_get(self, tile_name, orbit_number, period, direct, inter=False, lzw=False, mask=False, nr=False):
+    def get_ricemap(self, name, period, orbit_path=None, orbit_number=None, inter=False, lzw=False, mask=False, nr=False):
         """
          Georice - generation of classified rice map
         "no_data":0, "rice":1, "urban_tree":2, "water":3, "other":4
@@ -129,47 +121,45 @@ class Georice:
         into rice_output path defined.
         orbit_number - orbit number; type: str; - three digits string representation i.e. '018'
         period - starting_date / ending_date => YYYYMMDD, type: tuple('str','str')
-        direct - orbit direction; type: str; values ASC - ascending, DES - descending; default = 'DES'
+        orbit_path - orbit direction; type: str; values ASC - ascending, DES - descending; default = 'DES'
         inter - save intermediate products (min/max/mean/max_increase); type: bool; default = False
         lzv - use LZW compression; type: bool; default = False i.e. DEFLATE
         mask - generate and write rice, trees, water, other and nodata masks; type: bool; default = False
         nr - diable automatic reprojection to EPSG:4326, type: bool; default = True
-        delete - delete used scenes; type: bool; default = True
         """
-        self._ricemap.ricemap_get(tile_name, orbit_number, period, direct, inter, lzw, mask, nr)
-        self._get_tile_attr()
-        print(f'Rice maps were downloaded into {self.config["output"]}/{self._imagery.tile_name}/ricemaps')
+        self.filter(inplace=True, rel_orbit_num=orbit_number, orbit_path=orbit_path)
+
+        if self._imagery.aoi.geometry.area >= load_config().get('max_area'):
+            geom = Geometry(self._imagery.aoi.geometry, self._imagery.aoi.crs, grid_leght=(10000, 10000))
+            copy = self._imagery.__copy__()
+            for id, sub_aoi in enumerate(iter(geom)):
+                part = f'part{id}-'
+                grid = Geometry(sub_aoi[0], self._imagery.aoi.crs)
+                copy.aoi = grid
+                copy.download(tile_name=name, part=part)
+                self._ricemap.ricemap_get(name, orbit_number, period, orbit_path, inter, lzw, mask, nr, part=part)
+                self._get_tile_attr()
+                self.__getattribute__(name).scenes.delete()
+            mosaic(self.__getattribute__(name).ricemaps.file_paths())
+
+        else:
+            self._imagery.download(tile_name=name)
+            self._ricemap.ricemap_get(name, orbit_number, period, orbit_path, inter, lzw, mask, nr)
+            self._get_tile_attr()
+            self.__getattribute__(name).scenes.delete()
+
+        print(f'Rice maps were downloaded into {self.config["output"]}/{name}/ricemaps')
 
 
-class Dir:
-    def __init__(self, path):
-        self._path = path
-        for file in os.scandir(self._path):
-            if file.is_dir():
-                setattr(self, file.name, Dir(file.path))
-            elif file.is_file() and file.name.endswith(('tif', 'tiff')):
-                setattr(self, file.name.split('.')[0], Raster(file.name.split('.')[0], file.path))
-
-    def __call__(self):
-        return [file.name for file in os.scandir(self._path)]
-
-    def delete(self):
-        """delete directory and child directory"""
-        shutil.rmtree(self._path)
 
 
-class Raster:
-    def __init__(self, name, path):
-        self.name = name
-        self.path = path
 
-    def plot(self, **kwargs):
-        with open(self.path) as dataset:
-            imshow(dataset.read(1), **kwargs)
 
-    def array(self):
-        with open(self.path) as dataset:
-            return dataset.read(1)
+
+
+
+
+
 
 
 

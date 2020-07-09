@@ -19,7 +19,7 @@ setup(
         "rasterio",
         "numpy",
         "click",
-        "geopandas"],
+        "geopandas", 'shapely', 'pyproj'],
     zip_safe=False,
     include_package_data=True,
     classifiers=[
