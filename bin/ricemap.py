@@ -435,7 +435,7 @@ if __name__ == '__main__':
     process = psutil.Process(os.getpid())
     
     # parameters handling
-    if len(sys.argv) < 6:
+    if len(sys.argv) < 7:
         cmd_help()
         sys.exit(1)
     
@@ -450,6 +450,7 @@ if __name__ == '__main__':
     starting_date = sys.argv[3]
     ending_date = sys.argv[4]
     output_path = sys.argv[5]
+    part = sys.argv[6]
     desireddirection = 'DES'
     dstSRS = 'EPSG:4326'
     masks = False
@@ -564,7 +565,9 @@ if __name__ == '__main__':
     # ------------------------------------------------------------------------------------------------------------------
     # initialize processing
     
-    output_path = os.path.join(output_path, product[1], 'ricemaps')
+    # output_path = os.path.join(output_path, product[1], 'ricemaps') # org
+    output_path = os.path.join(output_path, data_path.split('\\')[-2], 'ricemaps')
+
     if not os.path.exists(output_path):
         os.makedirs(output_path)
     

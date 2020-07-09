@@ -9,7 +9,7 @@ class Ricemap:
         config = load_config()
         self.output = config['output']
 
-    def ricemap_get_all(self, tile_name):
+    def ricemap_get_all(self, tile_name): # smazat
         """
         Generate rice maps for all combinations of orbit number, orbit direction
         and period found at scene directory for given tile name.
@@ -31,7 +31,7 @@ class Ricemap:
                 print(f'Ricemap for orbit path/orbit number/period: {orbit}/{num}/{min(period)}/{max(period)} '
                            f'saved at folder: {self.output}/{tile_name}')
 
-    def ricemap_get(self, tile_name, orbit_number, period, direct, inter=False, lzw=False, mask=False, nr=False):
+    def ricemap_get(self, tile_name, orbit_number, period, direct, inter=False, lzw=False, mask=False, nr=False, part=''):
         """
         Set ricemap commands.
         NOTE: starting_date / ending_date => YYYYMMDD, inclusive
@@ -48,4 +48,5 @@ class Ricemap:
             command.append('-m')
         if nr:
             command.append('-nr')
+        command.append(part)
         subprocess.run(' '.join(command), shell=True)
