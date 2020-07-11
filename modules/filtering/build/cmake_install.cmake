@@ -1,8 +1,8 @@
-# Install script for directory: /home/georice/filtering
+# Install script for directory: /home/georice/modules/filtering
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/georice/otb_modul")
+  set(CMAKE_INSTALL_PREFIX "/home/georice/modules/otb_filtering")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -39,19 +39,19 @@ endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xDevelopmentx" OR NOT CMAKE_INSTALL_COMPONENT)
   list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
-   "/home/georice/otb_modul/include/")
+   "/home/georice/modules/otb_filtering/include/")
   if(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-file(INSTALL DESTINATION "/home/georice/otb_modul/include" TYPE DIRECTORY FILES "/home/georice/filtering/include/")
+file(INSTALL DESTINATION "/home/georice/modules/otb_filtering/include" TYPE DIRECTORY FILES "/home/georice/modules/filtering/include/")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/georice/filtering/build/app/cmake_install.cmake")
+  include("/home/georice/modules/filtering/build/app/cmake_install.cmake")
 
 endif()
 
@@ -63,5 +63,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/georice/filtering/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/georice/modules/filtering/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
