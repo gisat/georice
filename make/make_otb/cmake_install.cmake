@@ -1,8 +1,8 @@
-# Install script for directory: /home/georice/otb/SuperBuild
+# Install script for directory: /home/georice/modules/otb/SuperBuild
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/georice/otb/superbuild_install")
+  set(CMAKE_INSTALL_PREFIX "/home/georice/modules/otb/superbuild_install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/georice/otb/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/georice/modules/otb/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

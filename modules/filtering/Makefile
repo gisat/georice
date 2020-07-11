@@ -51,7 +51,7 @@ EQUALS = =
 CMAKE_SOURCE_DIR = /home/georice/modules/filtering
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/georice/moduels/filtering/build
+CMAKE_BINARY_DIR = /home/georice/modules/filtering/build
 
 #=============================================================================
 # Targets provided globally by CMake.
