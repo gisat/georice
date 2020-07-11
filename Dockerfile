@@ -4,9 +4,9 @@ FROM ubuntu:18.04
 # docker rmi $(docker images -a -q)
 
 RUN apt update \
-    && apt install -y git \
+    && apt install -y git=2.17.1 \
     && apt install -y libpcre2* \ 
-    && apt install -y swig \
+    && apt install -y swig=3.0.12 \
     && apt install -y g++ \
     && apt install -y python3 \
     && apt install -y python3-pip \
