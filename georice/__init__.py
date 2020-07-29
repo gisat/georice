@@ -171,7 +171,7 @@ class Georice:
             self._get_tile_attr()
             self.__getattribute__(name).scenes.delete()
 
-        print(f'Rice map was downloaded into {self.config["output"]}/{name}/ricemaps')
+        print(f'Rice map was downloaded into {self.config["output"]}{os.sep}{name}{os.sep}ricemaps')
 
 
 

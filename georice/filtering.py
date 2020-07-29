@@ -28,6 +28,12 @@ class Filtering:
         filelist_str = " ".join((scene.path for scene in self.get_scenes if scene.name.endswith('.tif')))
         year_outcore_str = '-'.join([min(self.outcore_year), max(self.outcore_year)])
 
+        try:
+            os.makedirs(os.path.join(self.folder_path('scenes'), "filtered"))
+        except os.error:
+            print('error to create filtered')
+            pass
+
         self.compute_outcore(filelist_str, orbit_path, year_outcore_str)
 
         self.compute_filtered(filelist_str, orbit_path, year_outcore_str)
@@ -44,11 +50,6 @@ class Filtering:
                   + f' -ram {str(self.ram_per_process)}'
 
         pids.append([Popen(command, stdout=self.stdoutfile, stderr=self.stderrfile, shell=True), command])
-
-        try:
-            os.makedirs(os.path.join(self.folder_path('scenes'), "filtered"))
-        except os.error:
-            pass
 
         title = "Compute outcore"
         nb_cmd = len(pids)
