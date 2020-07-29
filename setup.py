@@ -8,7 +8,7 @@ def readme():
 
 setup(
     name='georice',
-    version='0.1',
+    version='0.7',
     description='Part of Georice processor responsible acquisition of scenes for given aoi  from Sentinel hub ',
     author='Michal opletal',
     author_email='michal.opletal@gisat.cz',
