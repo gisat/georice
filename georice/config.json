@@ -13,5 +13,10 @@
   "img_height": 500,
   "img_width": 500,
   "resolution": 10,
-  "max_area" : 10E9
+  "max_area" : 10E9,
+  "year_outcore_list" : ["2019","2018"],
+  "year_filter_list" : ["2019","2018"],
+  "ram_per_process" : 4096,
+  "OTBThreads" : 4,
+  "Window_radius" : 2
 }

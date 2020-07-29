@@ -13,26 +13,34 @@ RUN apt update \
     && apt install -y cmake-curses-gui \
     && apt update
 
-RUN git clone https://gisat:GI+hu8iUce+@github.com/gisat/georice.git  /home \
+RUN git clone https://gisat:GI+hu8iUce+@github.com/gisat/georice.git  /home/georice \
 	&& chmod 777 /home/georice \
-	&& git clone https://gitlab.orfeo-toolbox.org/orfeotoolbox/otb.git /home/georice/modules \
-    && mkdir /home/georice/modules/otb/build \
+	&& git clone https://gitlab.orfeo-toolbox.org/orfeotoolbox/otb.git /home/georice/modules/otb
+
+RUN mkdir /home/georice/modules/otb/build \
     && mkdir /home/georice/modules/otb/Downloads \
     && mkdir /home/georice/modules/otb/superbuild_install \
-    && copy  /home/georice/make/make_otb/. /home/georice/modules/otb/build/
+    && cp -r  /home/georice/make/make_otb/. /home/georice/modules/otb/build/
 
-#RUN cd /home/georice/otb/build/ \
-#	&& make -j4 \
-#	&& export PATH=$PATH:/home/georice/modules/otb/superbuild_install/bin \
-#	&& export OTB_APPLICATION_PATH=$OTB_APPLICATION_PATH:/home/georice/modules/otb/superbuild_install/bin \
-#	&& mkdir /home/georice/modules/filtering/build \
-#	&& cd /home/georice/modules/filtering/build \
-#	&& CC=$GCCHOME/usr/bin/gcc CXX=$GCCHOME/usr/bin/g++ \
-#	&& make -j4
-	
+RUN cd /home/georice/modules/otb/build/ \
+    && make
 
-#	CC=$GCCHOME/usr/bin/gcc CXX=$GCCHOME/usr/bin/g++ cmake -C ../build.cmake ..
-	
+ENV PATH=$PATH:/home/georice/modules/otb/superbuild_install/bin
+ENV OTB_APPLICATION_PATH=$OTB_APPLICATION_PATH:/home/georice/modules/otb/superbuild_install/lib
+
+RUN cd /home/georice/modules/filtering/build \
+    && make
+
+ENV PATH=$PATH:/home/georice/modules/filtering/build/bin
+ENV OTB_APPLICATION_PATH=$OTB_APPLICATION_PATH:/home/georice/modules/filtering/build/lib/otb/applications
+
+ENV LANG=C.UTF-8
+
+# RUN apt -y install gdal-bin python3-gdal
+
+
+
+
 
 
 

@@ -566,7 +566,8 @@ if __name__ == '__main__':
     # initialize processing
     
     # output_path = os.path.join(output_path, product[1], 'ricemaps') # org
-    output_path = os.path.join(output_path, data_path.split('\\')[-2], 'ricemaps')
+
+    output_path = os.path.join(output_path, 'ricemaps')
 
     if not os.path.exists(output_path):
         os.makedirs(output_path)
@@ -667,6 +668,7 @@ if __name__ == '__main__':
     S1_dataset_ricemap = rice_mapping(temporal_mean, temporal_max_increase, temporal_min, temporal_max, RICE_THRESHOLD_DB)
     
     print("Writing output product(s)")
+
     file = os.path.join(output_path, 'ricemap'+output_suffix)
     saveToGTiff(S1_dataset_ricemap, file, projection, transform, dstSRS, None, 0, None, None, COMPRESSOR, None, GEOTIFF_OPTIONS)
     if all_products:

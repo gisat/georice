@@ -284,6 +284,8 @@ class Geometry:
         :type geometry: shapely.geometry.Polygon or shapely.geometry.MultiPolygon or dict or str
         :param crs: Coordinate reference system of the geometry
         :type crs: Pyproj.CRS or epsg as int or str
+        :param  grid_leght: grid size in map units
+        :type  grid_leght: tuple (x lenght, y length)
         """
         self._geometry = self._parse_geometry(geometry)
         self._crs = self._parse_crs(crs)

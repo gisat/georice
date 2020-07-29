@@ -2,6 +2,7 @@
 
 from .imagery import GetSentinel, Geometry
 from .ricemap import Ricemap
+from .filtering import Filtering
 from .utils import load_config, show_config, save_config, set_sh, show_sh, Dir, mosaic
 import os
 
@@ -11,11 +12,18 @@ class Georice:
         self.config = load_config()
         self._imagery = GetSentinel()
         self._ricemap = Ricemap()
+        self._filtering = Filtering()
 
         self._get_tile_attr()
 
     def _get_tile_attr(self):
-        for file in os.scandir(self.config['output']):
+        try:
+            output = os.scandir(self.config['output'])
+        except FileNotFoundError:
+            os.makedirs(self.config['output'])
+            output = os.scandir(self.config['output'])
+
+        for file in output:
             if file.is_dir():
                 setattr(self, file.name, Dir(file.path))
 
@@ -112,7 +120,8 @@ class Georice:
         print(f'Scenes were downloaded into {self.config["output"]}/{name}/scenes')
         self._get_tile_attr()
 
-    def get_ricemap(self, name, period, orbit_path=None, orbit_number=None, inter=False, lzw=False, mask=False, nr=False):
+    def get_ricemap(self, name, period, orbit_path=None, orbit_number=None, inter=False, lzw=False, mask=False, nr=False,
+                    filtering=True):
         """
          Georice - generation of classified rice map
         "no_data":0, "rice":1, "urban_tree":2, "water":3, "other":4
@@ -137,18 +146,27 @@ class Georice:
                 grid = Geometry(sub_aoi[0], self._imagery.aoi.crs)
                 copy.aoi = grid
                 copy.download(tile_name=name, part=part)
-                self._ricemap.ricemap_get(name, orbit_number, period, orbit_path, inter, lzw, mask, nr, part=part)
+                if filtering:
+                    self._filtering.process(name, orbit_path)
+                    self._ricemap.ricemap_get(name, orbit_number, period, orbit_path, inter, lzw, mask, nr, part=part,
+                                              folder=f'scenes{os.sep}filtered')
+                else:
+                    self._ricemap.ricemap_get(name, orbit_number, period, orbit_path, inter, lzw, mask, nr, part=part)
                 self._get_tile_attr()
                 self.__getattribute__(name).scenes.delete()
             mosaic(self.__getattribute__(name).ricemaps.file_paths())
-
         else:
             self._imagery.download(tile_name=name)
-            self._ricemap.ricemap_get(name, orbit_number, period, orbit_path, inter, lzw, mask, nr)
+            if filtering:
+                self._filtering.process(name, orbit_path)
+                self._ricemap.ricemap_get(name, orbit_number, period, orbit_path, inter, lzw, mask, nr,
+                                          folder=f'scenes{os.sep}filtered')
+            else:
+                self._ricemap.ricemap_get(name, orbit_number, period, orbit_path, inter, lzw, mask, nr)
             self._get_tile_attr()
             self.__getattribute__(name).scenes.delete()
 
-        print(f'Rice maps were downloaded into {self.config["output"]}/{name}/ricemaps')
+        print(f'Rice map was downloaded into {self.config["output"]}/{name}/ricemaps')
 
 
 
