@@ -46,7 +46,7 @@ class Filtering:
         pids.append([Popen(command, stdout=self.stdoutfile, stderr=self.stderrfile, shell=True), command])
 
         try:
-            os.makedirs(os.path.join(self.folder_path('scene'), "filtered"))
+            os.makedirs(os.path.join(self.folder_path('scenes'), "filtered"))
         except os.error:
             pass
 

@@ -568,7 +568,7 @@ class Scene(Geometry):
 
     def __repr__(self):
         """String representation of scene"""
-        return f'satellite: {self.satellite}, polarization: {self.polar}, rel_orbit_num: {self.rel_orbit_num}, ' \
+        return f'satellite: {self.satellite}, polarization: {self.polar}, orbit_number: {self.rel_orbit_num}, ' \
                f'orbit_path: {self.orbit_path}'
 
     def __key(self):
