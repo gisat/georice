@@ -46,7 +46,7 @@ class Filtering:
         pids.append([Popen(command, stdout=self.stdoutfile, stderr=self.stderrfile, shell=True), command])
 
         try:
-            os.makedirs(os.path.join(self.folder_path('scene'), "filtered"))
+            os.makedirs(os.path.join(self.folder_path('scenes'), "filtered"))
         except os.error:
             pass
 
@@ -79,7 +79,7 @@ class Filtering:
                   + filelist_str + " -oc " \
                   + os.path.join(self.folder_path('scenes'), f'outcore{year_outcore_str}_S1{orbit_path}.tif') \
                   + f' -wr {self.Window_radius} -enl ' \
-                  + os.path.join(self.folder_path('scene'), 'filtered', f'enl_{year_outcore_str}_S1{orbit_path}.tif') \
+                  + os.path.join(self.folder_path('scenes'), 'filtered', f'enl_{year_outcore_str}_S1{orbit_path}.tif') \
                   + f' -ram {str(self.ram_per_process)}'
 
         pids.append([Popen(command, stdout=self.stdoutfile, stderr=self.stderrfile, shell=True), command])
