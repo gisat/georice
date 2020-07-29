@@ -22,7 +22,6 @@ setup(
         'matplotlib',
         'shapely',
         'pyproj',
-        'notebook',
         'gdal',
         'psutil',
         'numba',
