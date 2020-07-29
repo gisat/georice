@@ -10,17 +10,18 @@ class Georice:
 
     def __init__(self):
         self.config = load_config()
+        self._path_check()
         self._imagery = GetSentinel()
         self._ricemap = Ricemap()
         self._filtering = Filtering()
 
-        self._path_check()
         self._get_tile_attr()
 
     def _path_check(self):
         if self.config['output'] == 'default':
             home = os.path.expanduser("~")
             self.set_config(output=os.path.join(home, 'output'))
+            self.config = load_config()
 
     def _get_tile_attr(self):
         try:
@@ -140,6 +141,7 @@ class Georice:
         lzv - use LZW compression; type: bool; default = False i.e. DEFLATE
         mask - generate and write rice, trees, water, other and nodata masks; type: bool; default = False
         nr - diable automatic reprojection to EPSG:4326, type: bool; default = True
+        filtering - Use SAR multi-temporal speckle filter; default = True
         """
         self.filter(inplace=True, rel_orbit_num=orbit_number, orbit_path=orbit_path)
 
