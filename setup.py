@@ -17,7 +17,6 @@ setup(
     install_requires=[
         'sentinelhub',
         'rasterio',
-        'numpy',
         'click',
         'matplotlib',
         'shapely',
@@ -26,7 +25,8 @@ setup(
         'gdal',
         'psutil',
         'numba',
-        'scikit-image'],
+        'scikit-image',
+        'numpy'],
     zip_safe=False,
     include_package_data=True,
     classifiers=[
