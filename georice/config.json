@@ -8,7 +8,7 @@
     "DES"
   ],
   "time_range": 3600,
-  "output": "default",
+  "output": "C:\\Users\\micha\\output",
   "wsf_version": "1.0.0",
   "img_height": 500,
   "img_width": 500,

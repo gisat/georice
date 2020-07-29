@@ -145,10 +145,16 @@ class Georice:
         """
         self.filter(inplace=True, rel_orbit_num=orbit_number, orbit_path=orbit_path)
 
+
         if self._imagery.aoi.geometry.area >= load_config().get('max_area'):
             geom = Geometry(self._imagery.aoi.geometry, self._imagery.aoi.crs, grid_leght=(10000, 10000))
             copy = self._imagery.__copy__()
+
+            print(f'Area is larger than {self.config["max_area"]/1e6} km2. AOI will be processed in parts.')
+            n_parts = sum(1 for dummy in iter(geom))
+
             for id, sub_aoi in enumerate(iter(geom)):
+                print(f'Starting to process part {id+1}/{n_parts}')
                 part = f'part{id}-'
                 grid = Geometry(sub_aoi[0], self._imagery.aoi.crs)
                 copy.aoi = grid
@@ -161,9 +167,12 @@ class Georice:
                     self._ricemap.ricemap_get(name, orbit_number, period, orbit_path, inter, lzw, mask, nr, part=part)
                 self._get_tile_attr()
                 self.__getattribute__(name).scenes.delete()
+            print(f'')
             mosaic(self.__getattribute__(name).ricemaps.file_paths())
         else:
+            print('Downloading scenes')
             self._imagery.download(tile_name=name)
+            print('Downloading finished')
             if filtering:
                 self._filtering.process(name, orbit_path)
                 self._ricemap.ricemap_get(name, orbit_number, period, orbit_path, inter, lzw, mask, nr,
