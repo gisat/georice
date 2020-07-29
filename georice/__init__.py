@@ -14,7 +14,13 @@ class Georice:
         self._ricemap = Ricemap()
         self._filtering = Filtering()
 
+        self._path_check()
         self._get_tile_attr()
+
+    def _path_check(self):
+        if self.config['output'] == 'default':
+            home = os.path.expanduser("~")
+            self.set_config(output=os.path.join(home, 'output'))
 
     def _get_tile_attr(self):
         try:
@@ -51,14 +57,13 @@ class Georice:
         """Show actual settingo of Sentinel Hub Credentials"""
         show_sh()
 
-    def set_config(self, **kwargs):
+    def set_config(self, **kwargs: dict):
         """Save setting of config file
 
         Parameters:
         polar - polarization; type: list; values VV, VH; default = ['VV','VH']; - used for filtering scenes
         orbit_path - orbit path; type: list; values ASC - ascending, DES - descending; default =['ASC','DES]; - used for filtering scenes
-        scn_output - path to folder were scenes will be downloaded; type: str; required;
-        rice_output - path to folder were will be saved generated rice maps; type: str; required;
+        output - path to working folder
         nodata - no data value; type: int; default = -999;
         timerange - used for filtering a merging S1B scenes which were acquired withing the time range; type: inf; default = 3600 s
         wsf_verison - type: str; default = '1.0.0'

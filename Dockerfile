@@ -1,21 +1,10 @@
-FROM ubuntu:18.04
+FROM gisat/otb_modul:sarfiltering
 
-# docker rm $(docker ps -a -q)
-# docker rmi $(docker images -a -q)
-
-RUN apt update \
-    && apt install -y git \
-    && apt install -y libpcre2* \ 
-    && apt install -y swig \
-    && apt install -y g++ \
-    && apt install -y python3 \
-    && apt install -y python3-pip \
-    && apt install -y cmake-curses-gui \
-    && apt update
 
 RUN git clone https://gisat:GI+hu8iUce+@github.com/gisat/georice.git  /home/georice \
-	&& chmod 777 /home/georice \
-	&& git clone https://gitlab.orfeo-toolbox.org/orfeotoolbox/otb.git /home/georice/modules/otb
+	&& chmod 777 /home/georice
+
+
 
 RUN mkdir /home/georice/modules/otb/build \
     && mkdir /home/georice/modules/otb/Downloads \
