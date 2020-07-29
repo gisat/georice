@@ -15,6 +15,7 @@ setup(
     long_description=readme(),
     packages=find_packages(),
     install_requires=[
+        'numpy>=1.15.1'
         'sentinelhub',
         'rasterio',
         'click',
@@ -25,8 +26,7 @@ setup(
         'gdal',
         'psutil',
         'numba',
-        'scikit-image',
-        'numpy'],
+        'scikit-image'],
     zip_safe=False,
     include_package_data=True,
     classifiers=[
