@@ -75,4 +75,6 @@ Specific rice map can be obtained via subcommand ``get`` and modified by setting
 More info via option ``--help``
 
 
+| **Run as a docker**
 
+| ``docker run -it -p 5000:5000 eurodatacube/georice``

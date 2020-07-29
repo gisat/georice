@@ -19,7 +19,7 @@ class Georice:
 
     def _path_check(self):
         if self.config['output'] == 'default':
-            home = os.path.expanduser("~")
+            home = os.getcwd()
             self.set_config(output=os.path.join(home, 'output'))
             self.config = load_config()
 
