@@ -26,7 +26,7 @@ class Georice:
         try:
             output = os.scandir(self.config['output'])
         except FileNotFoundError:
-            os.makedirs(self.config['output'])
+            os.makedirs(self.config['output'], mode=0o777)
             output = os.scandir(self.config['output'])
 
         for file in output:
