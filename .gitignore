@@ -1,2 +1,10 @@
-*.xml
-*.iml
+
+/test/
+/output/
+
+main.py
+
+/georice/debug.py
+/georice/file.log
+/georice.egg-info/
+S1ProcessorErr.log
