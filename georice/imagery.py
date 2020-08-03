@@ -9,7 +9,7 @@ from rasterio.features import rasterize
 from requests import get
 from sentinelhub import BBox, SentinelHubRequest, SHConfig, MimeType
 from itertools import repeat
-from .utils import load_config
+from .utils import load_config, load_sh
 from pyproj import CRS, Transformer
 from shapely.ops import transform
 from shapely.geometry import Polygon, MultiPolygon, shape
@@ -23,7 +23,7 @@ import numpy
 class GetSentinel:
 
     def __init__(self):
-        self.SHConfig = SHConfig()
+        self.SHConfig = load_sh()
         self.period = []
         self.tile_name = ''
         self.fld_name = ''
@@ -34,7 +34,6 @@ class GetSentinel:
         self.lx = self.config.get('img_width')*self.config.get('resolution')
         self.ly = self.config.get('img_height')*self.config.get('resolution')
         self.wsf_offset = 0
-
 
     @property
     def config(self):
