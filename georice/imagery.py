@@ -28,8 +28,8 @@ class GetSentinel:
         self.tile_name = ''
         self.fld_name = ''
         self._scenes = []
-        self.epsg = None
         self.aoi = None
+        self.epsg = None
         self.nodata = -999
         self.lx = self.config.get('img_width')*self.config.get('resolution')
         self.ly = self.config.get('img_height')*self.config.get('resolution')
