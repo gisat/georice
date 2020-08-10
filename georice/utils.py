@@ -44,10 +44,10 @@ def load_sh():
                     env = credentials
                 else:
                     env = 'sh_' + credentials
-                setattr(config, credentials, os.environ.__getitem__(env.capitalize()))
+                setattr(config, credentials, os.environ.__getitem__(env.upper()))
                 config.save()
             except KeyError:
-                print(f'SentinelHub credential as environmental variable {env.capitalize()} was not found. '
+                print(f'SentinelHub credential as environmental variable {env.upper()} was not found. '
                       f'Set credential {credentials} manualy')
     return SHConfig()
 
