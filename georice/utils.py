@@ -45,6 +45,7 @@ def load_sh():
                 else:
                     env = 'sh_' + credentials
                 setattr(config, credentials, os.environ.__getitem__(env.upper()))
+                print(f'SentinelHub credential {credentials} was set from env as {os.environ.__getitem__(env.upper())}')
                 config.save()
             except KeyError:
                 print(f'SentinelHub credential as environmental variable {env.upper()} was not found. '
