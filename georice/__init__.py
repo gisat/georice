@@ -3,7 +3,7 @@
 from .imagery import GetSentinel, Geometry
 from .ricemap import Ricemap
 from .filtering import Filtering
-from .utils import load_config, show_config, save_config, set_sh, show_sh, Dir, mosaic
+from .utils import load_config, show_config, save_config, set_sh, Dir, mosaic
 import os
 
 class Georice:
