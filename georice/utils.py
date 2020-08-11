@@ -21,7 +21,6 @@ SETTING = {
 }
 
 
-
 def set_sh(name, value):
     config = SHConfig()
     setattr(config, name, value)
@@ -29,14 +28,9 @@ def set_sh(name, value):
     config.save()
 
 
-def show_sh():
-    config = SHConfig()
-    print('Actual setting of Sentinel Hub credentials:')
-    for key in ['sh_client_id', 'sh_client_secret', 'instance_id']:
-        print(f'{key} : {config[key]}')
-
 def load_sh():
     config = SHConfig()
+
     for credentials in ['sh_client_id', 'sh_client_secret', 'instance_id']:
         if config.__getattribute__(credentials) == '':
             try:
@@ -45,11 +39,13 @@ def load_sh():
                 else:
                     env = 'sh_' + credentials
                 setattr(config, credentials, os.environ.__getitem__(env.upper()))
-                print(f'SentinelHub credential {credentials} was set from env as {os.environ.__getitem__(env.upper())}')
+                print(f'SentinelHub credential: {credentials} was set from env as {os.environ.__getitem__(env.upper())}')
                 config.save()
             except KeyError:
                 print(f'SentinelHub credential as environmental variable {env.upper()} was not found. '
                       f'Set credential {credentials} manualy')
+        else:
+            print(f'Actual SentinelHub credential: {credentials} is {config.__getattribute__(credentials)}')
     return SHConfig()
 
 

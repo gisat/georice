@@ -3,7 +3,7 @@
 from .imagery import GetSentinel, Geometry
 from .ricemap import Ricemap
 from .filtering import Filtering
-from .utils import load_config, show_config, save_config, set_sh, show_sh, Dir, mosaic
+from .utils import load_config, show_config, save_config, set_sh, Dir, mosaic
 import os
 
 class Georice:
@@ -38,25 +38,21 @@ class Georice:
         """Return list of tiles"""
         return [file.name for file in os.scandir(self.config['output']) if file.is_dir()]
 
-    @staticmethod
-    def set_credentials(**kwargs):
+    def set_credentials(self, **kwargs):
         """
         Save sentinel hub credentials into SHConfig. Credentials are:
         sh_client_id
         sh_client_secret
         instance_id
         More information about Sentinel-Hub credential at https://www.sentinel-hub.com/
+        Usage: Georice.set_credentials(**{'instance_id': 'your instance id'})
         """
         for key in kwargs.keys():
             if key in ['sh_client_id', 'sh_client_secret', 'instance_id']:
                 set_sh(key, kwargs[key])
             else:
                 raise Exception(f'Key: {key} was not in expected keys  (sh_client_id, sh_client_secret, instance_id)')
-
-    @staticmethod
-    def show_credentials():
-        """Show actual settingo of Sentinel Hub Credentials"""
-        show_sh()
+        self.config = load_config()
 
     def set_config(self, **kwargs: dict):
         """Save setting of config file
