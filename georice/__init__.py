@@ -58,16 +58,24 @@ class Georice:
         """Save setting of config file
 
         Parameters:
-        polar - polarization; type: list; values VV, VH; default = ['VV','VH']; - used for filtering scenes
-        orbit_path - orbit path; type: list; values ASC - ascending, DES - descending; default =['ASC','DES]; - used for filtering scenes
-        output - path to working folder
-        nodata - no data value; type: int; default = -999;
-        timerange - used for filtering a merging S1B scenes which were acquired withing the time range; type: inf; default = 3600 s
-        wsf_verison - type: str; default = '1.0.0'
-        img_height - height of img in pixels; type: int; defualt = 1000;
-        img_width - width of img in pixels; type: int; defualt = 1000;
+        polar - polarization,  used for searching the archive; type: list; values VV, VH; default = ['VV','VH'];
+        orbit_path - orbit path, - used for filtering and searching of scenes; type: list;
+        values ASC - ascending, DES - descending; type: list; default =['ASC','DES];
+        output - output folder, if not set, current working directory is used, type: string;
+        wsf_version - type: str; default = '1.0.0';
+        img_height - height of img in pixels; type: int; default = 1000;
+        img_width - width of img in pixels; type: int; default = 1000;
         resx - resolution in x axis; type: int; default = 10;
         resy - resolution in y axis; type: int; default = 10;
+        max_area - if the area of  AOI in m2 is greater, AOI is break down into smaller tiles that area process
+        individually; type int; default = 1E9;
+        year_outcore_list - parameter of SAR MultiTempFilter, define year for outcore; type: list;
+        default = ["2019","2018"];
+         year_filter_list - parameter of SAR MultiTempFilter, define year for filter; type: list;
+        default = ["2019","2018"];
+        ram_per_process - parameter of SAR MultiTempFilter, define RAM used for a processing; type: int; default = 4096;
+        OTBThreads - parameter of SAR MultiTempFilter, number of threads; type: int; default = 4;
+        Window_radius - parameter of SAR MultiTempFilter; type: int; default = 2;
         """
         save_config(kwargs)
         self.config = load_config()
@@ -77,17 +85,24 @@ class Georice:
         """Save setting of config file
 
         Parameters:
-        polar - polarization; type: list; values VV, VH; default = ['VV','VH']; - used for filtering scenes
-        orbit_path - orbit path; type: list; values ASC - ascending, DES - descending; default =['ASC','DES]; - used for filtering scenes
-        scn_output - path to folder were scenes will be downloaded; type: str; required;
-        rice_output - path to folder were will be saved generated rice maps; type: str; required;
-        nodata - no data value; type: int; default = -999;
-        timerange - used for filtering a merging S1B scenes which were acquired withing the time range; type: inf; default = 3600 s
-        wsf_verison - type: str; default = '1.0.0'
-        img_height - height of img in pixels; type: int; defualt = 1000;
-        img_width - width of img in pixels; type: int; defualt = 1000;
+        polar - polarization,  used for searching the archive; type: list; values VV, VH; default = ['VV','VH'];
+        orbit_path - orbit path, - used for filtering and searching of scenes; type: list;
+        output - output folder, if not set, current working directory is used, type: string;
+        values ASC - ascending, DES - descending; type: list; default =['ASC','DES];
+        wsf_version - type: str; default = '1.0.0';
+        img_height - height of img in pixels; type: int; default = 1000;
+        img_width - width of img in pixels; type: int; default = 1000;
         resx - resolution in x axis; type: int; default = 10;
         resy - resolution in y axis; type: int; default = 10;
+        max_area - if the area of  AOI in m2 is greater, AOI is break down into smaller tiles that area process
+        individually; type int; default = 1E9;
+        year_outcore_list - parameter of SAR MultiTempFilter, define year for outcore; type: list;
+        default = ["2019","2018"];
+         year_filter_list - parameter of SAR MultiTempFilter, define year for filter; type: list;
+        default = ["2019","2018"];
+        ram_per_process - parameter of SAR MultiTempFilter, define RAM used for a processing; type: int; default = 4096;
+        OTBThreads - parameter of SAR MultiTempFilter, number of threads; type: int; default = 4;
+        Window_radius - parameter of SAR MultiTempFilter; type: int; default = 2;
         """
         show_config()
 
@@ -118,6 +133,11 @@ class Georice:
         return self._imagery.filter(inplace, **kwargs)
 
     def get_scenes(self, name):
+        """
+        Download selected scenes into output folder ie. 'output folder'/'tile name'/scenes.
+        :param name: Name of the tile
+        :return:
+        """
         self._imagery.download(name)
         print(f'Scenes were downloaded into {self.config["output"]}/{name}/scenes')
         self._get_tile_attr()

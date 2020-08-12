@@ -106,7 +106,6 @@ def mosaic(images_paths):
         os.remove(path)
 
 
-
 class Dir:
     def __init__(self, path):
         self._path = path
@@ -125,6 +124,7 @@ class Dir:
 
     def file_paths(self):
         return [file.path for file in os.scandir(self._path)]
+
 
 class Img:
     def __init__(self, name, path):

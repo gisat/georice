@@ -7,7 +7,6 @@
     "ASC",
     "DES"
   ],
-  "time_range": 3600,
   "output": "default",
   "wsf_version": "1.0.0",
   "img_height": 500,
