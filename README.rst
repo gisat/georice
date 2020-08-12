@@ -14,7 +14,9 @@ specifying  of Sentinel hub credentials:
 * client_secret
 * instance_id
 
-Rice map generation consisting of three steps. Acquisition of orthorectified and Gamma 0 Backscattered scenes from
+User specific credentials are imported as environmental variables and also set manually.
+Instance ID refers to Sentinel hub instance contains Sentinel 1A and Sentinel 1B VH/VV scenes. Rice map generation
+consisting of three steps. Acquisition of orthorectified and Gamma 0 Backscattered scenes from
 SentinelHub, applying of SAR multi-temporal speckle filter developed by CNES. This step is optional. To use a filtering
 step require instal OTB module including SARMultiTempFiltering (http://tully.ups-tlse.fr/koleckt/georice/tree/master/filtering).
 The last step is generation of classified rice map itself.
