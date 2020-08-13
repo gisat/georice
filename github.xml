@@ -1,9 +1,9 @@
 <application>
   <component name="GithubAccounts">
-    <account id="1cc70c1d-c244-4f3e-80c3-ec619d046653" name="Endtropy">
+    <account id="e942bb34-72d9-473e-a3e1-efdab6010022" name="development@gisat.cz">
       <server host="github.com" />
     </account>
-    <account id="e942bb34-72d9-473e-a3e1-efdab6010022" name="development@gisat.cz">
+    <account id="c2700844-65d0-47e2-8c7d-4ded2df90441" name="Endtropy">
       <server host="github.com" />
     </account>
   </component>
