@@ -34,8 +34,12 @@ class Ricemap:
             args.append('-nr')
         args.append(part)
 
-        p = subprocess.run(args=' '.join(args), shell=True, check=True)
-        if p.returncode != 0:
+        try:
+            p = subprocess.check_output(args=' '.join(args), shell=True)
+            print(p.decode())
+        except subprocess.CalledProcessError:
             print("Ricemap classificator wasn't executed successfully")
+            quit()
+
 
 
