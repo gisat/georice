@@ -24,7 +24,7 @@ setup(
         'pyproj',
         'gdal',
         'psutil',
-        'numba',
+        'numba=0.48.0',
         'scikit-image'],
     zip_safe=False,
     package_data={"": ["*.json"]},
