@@ -7,7 +7,7 @@
     "ASC",
     "DES"
   ],
-  "output": "C:\\Users\\micha\\PycharmProjects\\Georice\\output",
+  "output": "default",
   "wsf_version": "1.0.0",
   "img_height": 500,
   "img_width": 500,
