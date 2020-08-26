@@ -1,7 +1,7 @@
 import subprocess
 from .utils import load_config
 import os
-
+import sys
 
 class Ricemap:
 
@@ -17,7 +17,7 @@ class Ricemap:
         """
         scene_path = os.path.join(self.output, tile_name, folder)
         output_path = os.path.join(self.output, tile_name)
-        command = ['ricemap.py', scene_path, orbit_number, period[0], period[1], output_path]
+        command = [sys.executable, f'bin{os.sep}ricemap.py', scene_path, orbit_number, period[0], period[1], output_path]
         if direct:
             command.append('-d ' + direct)
         if inter:
@@ -29,4 +29,8 @@ class Ricemap:
         if nr:
             command.append('-nr')
         command.append(part)
-        subprocess.run(' '.join(command), shell=True)
+
+        returncode = subprocess.run(args=command, shell=False, check=True)
+        if returncode.returncode !=0:
+            print("Ricemap classificator wasn't executed successfully")
+

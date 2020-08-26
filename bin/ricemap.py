@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# SYNTAX: python3 /home/njoshi/Documents/georice.git/ricemap/ricemap_GISAT.py /mnt/vdd1/data/eurodatacube/data_out_michal/ 018 20180501 20181231 /mnt/vdd1/data/eurodatacube/data_out_GISAT/
-
 import os
 import sys
 import gdal
@@ -26,12 +24,15 @@ from platform import system
 
 THREAD_POOL = None
 
+
 def signal_handler(sig, frame):
     if THREAD_POOL is not None:
         THREAD_POOL.terminate()
     sys.exit(11)
 
 # Catch SIGINT (ctrl+c) signal
+
+
 signal.signal(signal.SIGINT, signal_handler)
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -78,13 +79,16 @@ INF_POS_FLOAT32 = np.float32(np.inf)
 # ----------------------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 # utility functions & classes
+# -- Memory / threads
 
-#--- Memory / threads
+
 def starmap(pool, methods, params, chunksize=1):
     pool = Pool(processes=2)
     return [pool.starmap(methods, params, chunksize)]
 
 # compute total process memory usage, accounting for memory shared with all child processes
+
+
 def memory_usage(process):
     try:
         if system() == 'Windows':
@@ -107,6 +111,8 @@ def memory_usage(process):
         return 0
 
 # memory monitor thread
+
+
 class MemoryMonitor(Thread):    
     def __init__(self, process, polling_delay):
         self.event = Event()
@@ -133,7 +139,8 @@ class MemoryMonitor(Thread):
     def get_peak_memory_gb(self):
         return self.memory / 1024**3
 
-#--- GeoTIFF
+# -- GeoTIFF
+
 
 def get_geotiff_infos(path):
     tmp_map = gdal.Open(path, gdal.GA_ReadOnly)
@@ -152,6 +159,8 @@ def get_geotiff_infos(path):
     return width, height, nodata, projection, transform, compression, blocksize, metadata, gcps, epsg
 
 # save geotiff gdal helper
+
+
 def saveToGTiff(
                 npArray,
                 dstFilePath,

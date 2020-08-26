@@ -3,8 +3,8 @@
 /output/
 
 main.py
+S1ProcessorErr.log
 
 /georice/debug.py
 /georice/file.log
 /georice.egg-info/
-S1ProcessorErr.log

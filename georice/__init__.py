@@ -52,7 +52,7 @@ class Georice:
                 set_sh(key, kwargs[key])
             else:
                 raise Exception(f'Key: {key} was not in expected keys  (sh_client_id, sh_client_secret, instance_id)')
-        self.config = load_config()
+        self._imagery = GetSentinel()
 
     def set_config(self, **kwargs: dict):
         """Save setting of config file
