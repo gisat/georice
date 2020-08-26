@@ -2,6 +2,8 @@ import subprocess
 from .utils import load_config
 import os
 import sys
+import georice
+from pathlib import Path
 
 class Ricemap:
 
@@ -17,21 +19,23 @@ class Ricemap:
         """
         scene_path = os.path.join(self.output, tile_name, folder)
         output_path = os.path.join(self.output, tile_name)
-        command = [sys.executable, f'bin{os.sep}ricemap.py', scene_path, orbit_number, period[0], period[1], output_path]
+        script = Path(georice.__file__).parent.parent / 'bin' / 'ricemap.py'
+        args = [sys.executable, str(script), scene_path, orbit_number, period[0], period[1], output_path]
         if direct:
-            command.append('-d ' + direct)
+            args.append('-d ')
+            args.append(direct)
         if inter:
-            command.append('-i')
+            args.append('-i')
         if lzw:
-            command.append('-lzw')
+            args.append('-lzw')
         if mask:
-            command.append('-m')
+            args.append('-m')
         if nr:
-            command.append('-nr')
-        command.append(part)
+            args.append('-nr')
+        args.append(part)
 
-        returncode = subprocess.run(' '.join(command), shell=False, check=True)
-        if returncode.returncode !=0:
+        p = subprocess.run(args=' '.join(args), shell=True, check=True)
+        if p.returncode != 0:
             print("Ricemap classificator wasn't executed successfully")
 
 
