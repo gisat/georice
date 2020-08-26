@@ -30,7 +30,7 @@ class Ricemap:
             command.append('-nr')
         command.append(part)
 
-        returncode = subprocess.run(args=command, shell=False, check=True)
+        returncode = subprocess.run(' '.join(command), shell=False, check=True)
         if returncode.returncode !=0:
             print("Ricemap classificator wasn't executed successfully")
 
