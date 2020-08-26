@@ -8,3 +8,4 @@ S1ProcessorErr.log
 /georice/debug.py
 /georice/file.log
 /georice.egg-info/
+/georice/config.json
