@@ -22,7 +22,7 @@ setup(
         'matplotlib==3.1.3',
         'shapely===1.6.4',
         'pyproj==2.4.1',
-        'gdal==3.0.2',
+        'gdal',
         'psutil==5.7.0',
         'numba==0.48.0',
         'scikit-image==0.16.2'],
