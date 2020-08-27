@@ -8,7 +8,7 @@ def readme():
 
 setup(
     name='georice',
-    versiom='0.7',
+    version='0.7',
     description='Part of Georice processor responsible acquisition of scenes for given aoi  from Sentinel hub ',
     author='Michal opletal',
     author_email='michal.opletal@gisat.cz',
@@ -17,7 +17,7 @@ setup(
     install_requires=[
         'numpy>=1.15.1',
         'sentinelhub==3.0.2',
-        'rasterio==1.1.0',
+        'rasterio',
         'click',
         'matplotlib==3.1.3',
         'shapely===1.6.4',
