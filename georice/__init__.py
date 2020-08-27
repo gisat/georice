@@ -160,7 +160,7 @@ class Georice:
         filtering - Use SAR multi-temporal speckle filter; default = True
         """
         self.filter(inplace=True, rel_orbit_num=orbit_number, orbit_path=orbit_path)
-        if self.__getattribute__(name) and hasattr(self.__getattribute__(name), 'scenes'):
+        if hasattr(self, name) and hasattr(self.__getattribute__(name), 'scenes'):
             self.__getattribute__(name).scenes.delete()
 
         if self._imagery.aoi.geometry.area >= load_config().get('max_area'):
