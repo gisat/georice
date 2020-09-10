@@ -69,6 +69,7 @@ class GetSentinel:
                folder of the same name
         :param info: bool, turn off/on writing down list of found scenes
         """
+        self._scenes = []
         self.epsg = epsg
         self.aoi = Geometry.from_bbox(bbox, epsg)
 
@@ -568,7 +569,8 @@ class Scene(Geometry):
     def __repr__(self):
         """String representation of scene"""
         return f'satellite: {self.satellite}, polarization: {self.polar}, orbit_number: {self.rel_orbit_num}, ' \
-               f'orbit_path: {self.orbit_path}'
+               f'orbit_path: {self.orbit_path} acquisition time: {self.from_time.strftime("%Y-%m-%dT%H:%M:%SZ")} - ' \
+               f'{self.to_time.strftime("%Y-%m-%dT%H:%M:%SZ")} '
 
     def __key(self):
         return self.bbox, self.from_time, self.to_time, self.orbit_path, self.abs_orbit_num, self.satellite, self.polar

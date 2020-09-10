@@ -92,18 +92,22 @@ def reset_config():
         json.dump(SETTING, cfg_file)
 
 
-def mosaic(images_paths):
+def mosaic(images_paths, delete=True):
     output = images_paths[0].replace('part0-', '')
     files_to_mosaic = [rio_open(path) for path in images_paths]
     mosaic, out_trans = merge(files_to_mosaic)
     out_profile = files_to_mosaic[0].profile.copy()
     out_profile.update({"height": mosaic.shape[1], "width": mosaic.shape[2], "transform": out_trans})
+    print('preparing to write mosaic')
     with rio_open(output, 'w', **out_profile) as dataset:
         dataset.write(mosaic)
+    print(f'mosaic created in: {output}')
 
-    for path, file in zip(images_paths, files_to_mosaic):
-        file.close()
-        os.remove(path)
+    if delete:
+        for path, file in zip(images_paths, files_to_mosaic):
+            file.close()
+            os.remove(path)
+        print('Temporary files deleted')
 
 
 class Dir:

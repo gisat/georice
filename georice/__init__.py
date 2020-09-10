@@ -143,7 +143,7 @@ class Georice:
         self._get_tile_attr()
 
     def get_ricemap(self, name, period, orbit_path=None, orbit_number=None, inter=False, lzw=False, mask=False, nr=False,
-                    filtering=True):
+                    filtering=True, delete=True):
         """
          Georice - generation of classified rice map
         "no_data":0, "rice":1, "urban_tree":2, "water":3, "other":4
@@ -158,6 +158,7 @@ class Georice:
         mask - generate and write rice, trees, water, other and nodata masks; type: bool; default = False
         nr - diable automatic reprojection to EPSG:4326, type: bool; default = True
         filtering - Use SAR multi-temporal speckle filter; default = True
+        delete - delete partial ricemaps; default = True
         """
         self.filter(inplace=True, rel_orbit_num=orbit_number, orbit_path=orbit_path)
         if hasattr(self, name) and hasattr(self.__getattribute__(name), 'scenes'):
@@ -185,7 +186,7 @@ class Georice:
                 self._get_tile_attr()
                 self.__getattribute__(name).scenes.delete()
             print(f'')
-            mosaic(self.__getattribute__(name).ricemaps.file_paths())
+            mosaic(self.__getattribute__(name).ricemaps.file_paths(), delete=delete)
         else:
             print('Downloading scenes')
             self._imagery.download(tile_name=name)
@@ -198,8 +199,7 @@ class Georice:
                 self._ricemap.ricemap_get(name, orbit_number, period, orbit_path, inter, lzw, mask, nr)
             self._get_tile_attr()
             self.__getattribute__(name).scenes.delete()
-
-        print(f'Rice map was downloaded into {self.config["output"]}{os.sep}{name}{os.sep}ricemaps')
+            print(f'Rice map was downloaded into {self.config["output"]}{os.sep}{name}{os.sep}ricemaps')
 
 
 
