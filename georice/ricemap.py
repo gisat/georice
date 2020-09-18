@@ -36,10 +36,12 @@ class Ricemap:
 
         try:
             p = subprocess.check_output(args=' '.join(args), shell=True)
-            print(p.decode())
-        except subprocess.CalledProcessError:
+        except subprocess.CalledProcessError as e:
             print("Ricemap classificator wasn't executed successfully")
+            print(e.output.decode())
             quit()
+        print(p.decode())
+        print(f'Rice map was generated into the folder {self.output}{os.sep}{tile_name}{os.sep}ricemaps')
 
 
 
